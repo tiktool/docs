@@ -28,13 +28,13 @@ Get granular analytics for a specific past live stream session. Returns detailed
 ### Examples
 
 <CodeGroup>
-```javascript Node.js
+````javascript Node.js
 const res = await fetch('https://api.tik.tools/webcast/live_analytics/video_detail?video_id=VID123&apiKey=YOUR_KEY', {
   headers: { 'x-cookie-header': 'sessionid=YOUR_TIKTOK_COOKIES' }
 });
 const { data } = await res.json();
-console.log(\
-```
+console.log(`Duration: ${data.duration}s, Peak: ${data.peak_viewers}`);
+````
 
 ```python Python
 import requests

@@ -29,13 +29,13 @@ Retrieve TikTok LIVE earnings data for a creator including diamonds received, co
 ### Examples
 
 <CodeGroup>
-```javascript Node.js
+````javascript Node.js
 const res = await fetch('https://api.tik.tools/webcast/user_earnings?unique_id=creator&apiKey=YOUR_KEY', {
   headers: { 'x-cookie-header': 'sessionid=YOUR_TIKTOK_COOKIES' }
 });
 const { data } = await res.json();
-console.log(\
-```
+console.log(`Diamonds: ${data.diamonds}`);
+````
 
 ```python Python
 import requests

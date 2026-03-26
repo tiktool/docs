@@ -28,15 +28,15 @@ Resolve numeric TikTok user IDs to their corresponding usernames (`unique_id`/`d
 ### Examples
 
 <CodeGroup>
-```javascript Node.js
+````javascript Node.js
 const res = await fetch('https://api.tik.tools/webcast/resolve_user_ids?apiKey=YOUR_KEY', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ user_ids: ['107955', '6789012345'] })
 });
 const { data } = await res.json();
-Object.values(data).forEach(u => console.log(\
-```
+Object.values(data).forEach(u => console.log(`${u.userId} → @${u.username}`));
+````
 
 ```python Python
 import requests
@@ -65,9 +65,16 @@ HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString()
 System.out.println(res.body());
 ```
 
-```go Go
-payload := bytes.NewBufferString(\
-```
+````go Go
+payload := bytes.NewBufferString(`{"user_ids":["107955","6789012345"]}`)
+resp, err := http.Post(
+    "https://api.tik.tools/webcast/resolve_user_ids?apiKey=YOUR_KEY",
+    "application/json", payload)
+if err != nil { log.Fatal(err) }
+defer resp.Body.Close()
+body, _ := io.ReadAll(resp.Body)
+fmt.Println(string(body))
+````
 
 ```csharp C#
 using var client = new HttpClient();

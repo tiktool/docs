@@ -73,7 +73,7 @@ This endpoint requires a **Basic** tier subscription or higher.
 ### Examples
 
 <CodeGroup>
-```javascript Node.js
+````javascript Node.js
 // Step 1: Get signed URL with session for populated results
 const res = await fetch(
   'https://api.tik.tools/webcast/feed?' + new URLSearchParams({
@@ -85,8 +85,33 @@ const res = await fetch(
   })
 );
 const { signed_url, headers, cookies, feed_remaining, feed_limit } = await res.json();
-console.log(\
-```
+console.log(`Quota: ${feed_remaining}/${feed_limit} calls remaining`);
+
+// Step 2: Fetch TikTok data from YOUR IP
+const tikRes = await fetch(signed_url, {
+  headers: { ...headers, Cookie: cookies }
+});
+const feed = await tikRes.json();
+
+// Step 3: Parse live rooms
+for (const entry of feed.data) {
+  const room = entry.data;
+  console.log(`🔴 @${room.owner.display_id} (${room.owner.nickname})`);
+  console.log(`   "${room.title}" — ${room.user_count} viewers`);
+}
+
+// Step 4: Load more (pagination)
+const nextCursor = feed.extra?.max_time;
+if (nextCursor) {
+  const page2 = await fetch(
+    'https://api.tik.tools/webcast/feed?' + new URLSearchParams({
+      apiKey: 'YOUR_KEY', session_id: 'YOUR_SESSION_ID',
+      region: 'US', max_time: nextCursor, count: '20',
+    })
+  );
+  // ... repeat Step 2-3
+}
+````
 
 ```python Python
 import requests

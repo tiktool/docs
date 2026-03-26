@@ -66,9 +66,16 @@ HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString()
 System.out.println(res.body());
 ```
 
-```go Go
-payload := bytes.NewBufferString(\
-```
+````go Go
+payload := bytes.NewBufferString(`{"room_id":"7123456789"}`)
+resp, err := http.Post(
+    "https://api.tik.tools/webcast/sign_websocket?apiKey=YOUR_KEY",
+    "application/json", payload)
+if err != nil { log.Fatal(err) }
+defer resp.Body.Close()
+body, _ := io.ReadAll(resp.Body)
+fmt.Println(string(body))
+````
 
 ```csharp C#
 using var client = new HttpClient();
