@@ -32,4 +32,4 @@ Preview at `http://localhost:3000`.
 
 - [tik.tools](https://tik.tools) — Main website & dashboard
 - [GitHub](https://github.com/tiktool) — Open source SDKs
-- [Discord](https://discord.gg/tiktool) — Community & support
+- [Discord](https://discord.gg/pkWbuWGuzT) — Community & support
