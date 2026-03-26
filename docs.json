@@ -141,5 +141,8 @@
       "discord": "https://discord.gg/pkWbuWGuzT",
       "x": "https://x.com/AnyStreamIO"
     }
+  },
+  "seo": {
+    "indexing": "navigable"
   }
 }
