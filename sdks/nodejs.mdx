@@ -1,0 +1,62 @@
+---
+title: "Node.js SDK"
+description: "Official TikTool Node.js SDK — connect to any TikTok Live stream with a simple, event-driven API."
+---
+
+## Installation
+
+```bash
+npm install @tiktool/live
+```
+
+## Quick Start
+
+```javascript
+import { TikTokLive } from '@tiktool/live';
+
+const client = new TikTokLive({
+  apiKey: process.env.TIKTOOL_API_KEY,
+  uniqueId: 'streamer_username',
+});
+
+client.on('connected', () => console.log('Connected!'));
+client.on('chat', (event) => console.log(`${event.user.uniqueId}: ${event.comment}`));
+client.on('gift', (event) => console.log(`${event.user.uniqueId} sent ${event.giftName}`));
+client.on('like', (event) => console.log(`${event.user.uniqueId} liked × ${event.likeCount}`));
+
+await client.connect();
+```
+
+## Configuration
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `apiKey` | string | — | Your TikTool API key |
+| `uniqueId` | string | — | TikTok username to connect to |
+| `enableExtendedGiftInfo` | boolean | `false` | Fetch full gift details (image, diamond values) |
+| `requestPollingIntervalMs` | number | `1000` | Polling interval for HTTP mode |
+
+## Events
+
+All events from the [WebSocket Events](/websocket/events) reference are available:
+
+```javascript
+client.on('chat', (event) => { /* chat message */ });
+client.on('gift', (event) => { /* virtual gift */ });
+client.on('like', (event) => { /* likes */ });
+client.on('member', (event) => { /* viewer joined */ });
+client.on('follow', (event) => { /* new follower */ });
+client.on('share', (event) => { /* stream shared */ });
+client.on('roomUserSeq', (event) => { /* viewer count update */ });
+client.on('subscribe', (event) => { /* new subscriber */ });
+client.on('linkMicBattle', (event) => { /* battle update */ });
+client.on('emote', (event) => { /* animated emote */ });
+client.on('envelope', (event) => { /* treasure box */ });
+client.on('questionNew', (event) => { /* Q&A question */ });
+```
+
+## Source Code
+
+<Card title="GitHub Repository" icon="github" href="https://github.com/tiktool/tiktok-live-api-sdk">
+  MIT-licensed. Full source code available.
+</Card>

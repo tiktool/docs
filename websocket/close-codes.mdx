@@ -1,0 +1,61 @@
+---
+title: "WebSocket Close Codes"
+description: "Reference for all WebSocket close codes returned by the TikTool API."
+---
+
+## Close Codes
+
+When a WebSocket connection closes, it includes a numeric code and a reason string.
+
+### Standard Codes
+
+| Code | Name | Description |
+|------|------|-------------|
+| `1000` | Normal Closure | Clean disconnect — stream ended or you closed the connection |
+| `1001` | Going Away | Server shutting down or stream ended |
+| `1006` | Abnormal Closure | Connection dropped without a close frame (network issue) |
+| `1008` | Policy Violation | Violated rate limits or usage policy |
+| `1011` | Internal Error | Server-side error — reconnect with backoff |
+
+### TikTool Custom Codes
+
+| Code | Name | Description |
+|------|------|-------------|
+| `4000` | Stream Offline | The TikTok user is not currently live |
+| `4001` | Stream Ended | The live stream ended while you were connected |
+| `4002` | Rate Limited | Too many connections — wait and retry |
+| `4003` | Authentication Failed | Invalid API key or expired JWT token |
+| `4004` | User Not Found | The TikTok username doesn't exist |
+| `4005` | Tier Limit | Connection limit reached for your tier |
+| `4006` | Duration Limit | Maximum connection duration reached (Sandbox: 5 min, Basic: 30 min) |
+| `4007` | Server Overloaded | Server at capacity — retry with exponential backoff |
+
+## Handling Close Codes
+
+```javascript
+ws.on('close', (code, reason) => {
+  const reasonStr = reason.toString();
+
+  switch (code) {
+    case 4000:
+    case 4001:
+      console.log('Stream offline/ended — stop reconnecting');
+      break;
+    case 4003:
+      console.error('Auth failed — check your API key');
+      break;
+    case 4005:
+    case 4006:
+      console.warn('Tier limit — upgrade your plan');
+      break;
+    default:
+      // Reconnect with exponential backoff
+      setTimeout(connect, reconnectDelay);
+      reconnectDelay = Math.min(reconnectDelay * 2, 30000);
+  }
+});
+```
+
+<Tip>
+Don't reconnect on codes `4000`, `4001`, `4003`, or `4004` — these indicate permanent conditions that won't change on retry.
+</Tip>

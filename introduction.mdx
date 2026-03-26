@@ -1,0 +1,98 @@
+---
+title: "TikTok Live API Documentation"
+description: "Connect to any TikTok LIVE stream and receive real-time chat, gifts, likes, viewer counts, and battle data. Code examples in 6 languages. Free sandbox — no credit card needed."
+---
+
+## Welcome to TikTool
+
+TikTool is the **developer-first TikTok LIVE API**. Connect to any live stream and receive real-time events — chat messages, virtual gifts, likes, follows, viewer counts, battles, and more — in under 5 lines of code.
+
+<CardGroup cols={2}>
+  <Card title="Quick Start" icon="rocket" href="/quickstart">
+    Get connected to a live stream in under 30 seconds. Free API key included.
+  </Card>
+  <Card title="WebSocket API" icon="plug" href="/websocket/connection">
+    Real-time events via WebSocket with sub-50ms latency and 99.9% uptime.
+  </Card>
+  <Card title="REST API" icon="server" href="/rest-api/overview">
+    13+ REST endpoints for signing URLs, checking live status, and fetching room data.
+  </Card>
+  <Card title="Live Captions" icon="closed-captioning" href="/captions/overview">
+    Real-time AI transcription and translation for any TikTok Live stream.
+  </Card>
+</CardGroup>
+
+## Why TikTool?
+
+<CardGroup cols={3}>
+  <Card title="30+ Real-Time Events" icon="bolt">
+    Chat, gifts, likes, follows, viewer counts, battles, room pins, shares, and more — all decoded from TikTok's protobuf protocol.
+  </Card>
+  <Card title="6 Languages" icon="code">
+    Code examples and SDKs for Node.js, Python, Go, Java, C#, and Rust.
+  </Card>
+  <Card title="Free Sandbox" icon="gift">
+    50 requests/day, 1 WebSocket connection. No credit card required. Upgrade when you need more.
+  </Card>
+  <Card title="Sub-50ms Latency" icon="gauge-high">
+    Events arrive in under 50 milliseconds. Built on edge infrastructure with 99.9% uptime SLA.
+  </Card>
+  <Card title="AI Live Captions" icon="microphone">
+    The only TikTok Live caption API. Auto-detect language, translate to 50+ languages, speaker diarization.
+  </Card>
+  <Card title="Open Source SDK" icon="github">
+    MIT-licensed Node.js and Python SDKs. Full source on GitHub.
+  </Card>
+</CardGroup>
+
+## Quick Example
+
+<CodeGroup>
+```javascript Node.js
+import WebSocket from 'ws';
+
+const ws = new WebSocket('wss://api.tik.tools?uniqueId=streamer_name&apiKey=YOUR_KEY');
+
+ws.on('message', (data) => {
+  const event = JSON.parse(data);
+  if (event.event === 'chat') {
+    console.log(`${event.data.user.uniqueId}: ${event.data.comment}`);
+  }
+});
+```
+
+```python Python
+import asyncio, websockets, json
+
+async def listen():
+    url = "wss://api.tik.tools?uniqueId=streamer_name&apiKey=YOUR_KEY"
+    async with websockets.connect(url) as ws:
+        async for message in ws:
+            event = json.loads(message)
+            if event["event"] == "chat":
+                print(f"{event['data']['user']['uniqueId']}: {event['data']['comment']}")
+
+asyncio.run(listen())
+```
+
+```bash cURL
+# Test with wscat:
+npx wscat -c "wss://api.tik.tools?uniqueId=streamer_name&apiKey=YOUR_KEY"
+
+# Or check if a user is live via REST:
+curl "https://api.tik.tools/webcast/check_alive?apiKey=YOUR_KEY&unique_id=streamer_name"
+```
+</CodeGroup>
+
+## Pricing
+
+| Tier | Price | Daily Requests | WebSocket Connections | WebSocket Duration |
+|------|-------|----------------|----------------------|-------------------|
+| **Sandbox** | Free | 50/day | 1 | 5 min |
+| **Basic** | $7/wk | 10,000/day | 5 | 30 min |
+| **Pro** | $15/wk | 75,000/day | 50 | Unlimited |
+| **Ultra** | $45/wk | 300,000/day | 500 | Unlimited |
+
+<Card title="View full pricing" icon="tag" href="https://tik.tools/pricing">
+  Compare plans, caption credit packs, and see FAQ.
+</Card>

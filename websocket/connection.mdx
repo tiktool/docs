@@ -1,0 +1,197 @@
+---
+title: "WebSocket Connection"
+description: "Connect to TikTok Live streams via WebSocket for real-time chat, gift, and viewer events with sub-50ms latency."
+---
+
+## Connection URL
+
+```
+wss://api.tik.tools?uniqueId=TIKTOK_USERNAME&apiKey=YOUR_API_KEY
+```
+
+### Query Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `uniqueId` | string | Yes | TikTok username (without `@`) |
+| `apiKey` | string | Yes* | Your API key (*or use `jwtKey`) |
+| `jwtKey` | string | Yes* | JWT token for frontend auth (*or use `apiKey`) |
+
+## Connection Example
+
+<CodeGroup>
+```javascript Node.js
+import WebSocket from 'ws';
+
+const ws = new WebSocket('wss://api.tik.tools?uniqueId=streamer&apiKey=YOUR_KEY');
+
+ws.on('open', () => console.log('Connected!'));
+
+ws.on('message', (raw) => {
+  const { event, data } = JSON.parse(raw);
+  switch (event) {
+    case 'roomInfo': console.log('Room:', data.roomId); break;
+    case 'chat':     console.log(data.user.uniqueId + ':', data.comment); break;
+    case 'gift':     console.log(data.user.uniqueId, 'sent', data.giftName); break;
+    case 'like':     console.log(data.user.uniqueId, 'liked ×' + data.likeCount); break;
+    case 'member':   console.log(data.user.uniqueId, 'joined'); break;
+  }
+});
+
+ws.on('close', (code, reason) => console.log('Closed:', code, reason.toString()));
+```
+
+```python Python
+import asyncio, websockets, json
+
+async def listen():
+    url = "wss://api.tik.tools?uniqueId=streamer&apiKey=YOUR_KEY"
+    async with websockets.connect(url) as ws:
+        async for message in ws:
+            msg = json.loads(message)
+            event = msg["event"]
+            data = msg.get("data", msg)
+            if event == "chat":
+                print(f"[Chat] {data['user']['uniqueId']}: {data['comment']}")
+            elif event == "gift":
+                print(f"[Gift] {data['user']['uniqueId']} sent {data['giftName']}")
+            elif event == "like":
+                print(f"[Like] {data['user']['uniqueId']} x{data['likeCount']}")
+
+asyncio.run(listen())
+```
+
+```go Go
+package main
+
+import (
+    "encoding/json"
+    "fmt"
+    "log"
+    "github.com/gorilla/websocket"
+)
+
+func main() {
+    conn, _, err := websocket.DefaultDialer.Dial(
+        "wss://api.tik.tools?uniqueId=streamer&apiKey=YOUR_KEY", nil)
+    if err != nil { log.Fatal(err) }
+    defer conn.Close()
+
+    for {
+        _, msg, err := conn.ReadMessage()
+        if err != nil { break }
+        var evt map[string]interface{}
+        json.Unmarshal(msg, &evt)
+        switch evt["event"] {
+        case "chat":
+            data := evt["data"].(map[string]interface{})
+            user := data["user"].(map[string]interface{})
+            fmt.Printf("[Chat] %s: %s\n", user["uniqueId"], data["comment"])
+        case "gift":
+            data := evt["data"].(map[string]interface{})
+            fmt.Printf("[Gift] %s\n", data["giftName"])
+        }
+    }
+}
+```
+
+```csharp C#
+using System.Net.WebSockets;
+using System.Text;
+using System.Text.Json;
+
+var ws = new ClientWebSocket();
+await ws.ConnectAsync(
+    new Uri("wss://api.tik.tools?uniqueId=streamer&apiKey=YOUR_KEY"),
+    CancellationToken.None);
+
+var buf = new byte[8192];
+while (ws.State == WebSocketState.Open) {
+    var result = await ws.ReceiveAsync(buf, CancellationToken.None);
+    var msg = Encoding.UTF8.GetString(buf, 0, result.Count);
+    var json = JsonDocument.Parse(msg).RootElement;
+    var evt = json.GetProperty("event").GetString();
+    switch (evt) {
+        case "chat":
+            var data = json.GetProperty("data");
+            Console.WriteLine($"[Chat] {data.GetProperty("user").GetProperty("uniqueId")}: {data.GetProperty("comment")}");
+            break;
+        default:
+            Console.WriteLine($"Event: {evt}");
+            break;
+    }
+}
+```
+</CodeGroup>
+
+## Message Format
+
+Every WebSocket message is a JSON object with:
+
+```json
+{
+  "event": "chat",
+  "data": {
+    "type": "chat",
+    "user": {
+      "uniqueId": "viewer123",
+      "nickname": "Cool Viewer",
+      "userId": "6892636847263982593",
+      "profilePictureUrl": "https://..."
+    },
+    "comment": "Hello streamer!"
+  }
+}
+```
+
+## First Event: `roomInfo`
+
+The first event you receive after connecting is always `roomInfo` with the room metadata:
+
+```json
+{
+  "event": "roomInfo",
+  "roomId": "71234567890",
+  "uniqueId": "streamer",
+  "roomInfo": {
+    "title": "Stream Title",
+    "user_count": 1234,
+    "like_count": 5678,
+    "owner": { "nickname": "Streamer", "uniqueId": "streamer" }
+  }
+}
+```
+
+## Connection Limits
+
+| Tier | Max Connections | Max Duration |
+|------|----------------|--------------|
+| Sandbox | 1 | 5 minutes |
+| Basic | 5 | 30 minutes |
+| Pro | 50 | Unlimited |
+| Ultra | 500 | Unlimited |
+
+## Reconnection
+
+If the WebSocket disconnects, implement exponential backoff:
+
+```javascript
+let reconnectDelay = 1000;
+
+function connect() {
+  const ws = new WebSocket('wss://api.tik.tools?uniqueId=streamer&apiKey=KEY');
+
+  ws.on('open', () => {
+    reconnectDelay = 1000; // Reset on successful connection
+  });
+
+  ws.on('close', (code) => {
+    if (code !== 4003) { // Don't reconnect on auth errors
+      setTimeout(connect, reconnectDelay);
+      reconnectDelay = Math.min(reconnectDelay * 2, 30000);
+    }
+  });
+}
+```
+
+See [Close Codes](/websocket/close-codes) for all possible close reasons.

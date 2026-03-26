@@ -1,80 +1,174 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: "Quick Start"
+description: "Connect to a TikTok Live stream and receive real-time events in under 30 seconds."
 ---
 
-## Get started in three steps
+## 1. Get Your API Key
 
-Get your documentation site running locally and make your first customization.
+Sign up at [tik.tools](https://tik.tools) and get a free sandbox API key from the [dashboard](https://tik.tools/dashboard). No credit card required.
 
-### Step 1: Set up your local environment
+## 2. Install (Optional)
 
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
+If using the Node.js SDK, install it via npm:
 
-### Step 2: Deploy your changes
+```bash
+npm install @tiktool/live
+```
 
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+Or use the WebSocket directly — no SDK required. Any language with WebSocket support works.
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+## 3. Connect
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+<CodeGroup>
+```javascript Node.js (SDK)
+import { TikTokLive } from '@tiktool/live';
 
-### Step 3: Go live
+const client = new TikTokLive({
+  apiKey: 'YOUR_API_KEY',
+  uniqueId: 'streamer_username',
+});
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+client.on('chat', (event) => {
+  console.log(`${event.user.uniqueId}: ${event.comment}`);
+});
 
-## Next steps
+client.on('gift', (event) => {
+  console.log(`${event.user.uniqueId} sent ${event.giftName} (${event.diamondCount}💎)`);
+});
 
-Now that you have your docs running, explore these key features:
+client.on('connected', () => console.log('Connected!'));
+
+await client.connect();
+```
+
+```javascript Node.js (WebSocket)
+import WebSocket from 'ws';
+
+const ws = new WebSocket('wss://api.tik.tools?uniqueId=streamer_name&apiKey=YOUR_KEY');
+
+ws.on('open', () => console.log('Connected!'));
+
+ws.on('message', (raw) => {
+  const { event, data } = JSON.parse(raw);
+  switch (event) {
+    case 'chat':     console.log(`💬 ${data.user.uniqueId}: ${data.comment}`); break;
+    case 'gift':     console.log(`🎁 ${data.user.uniqueId} sent ${data.giftName}`); break;
+    case 'like':     console.log(`❤️ ${data.user.uniqueId} liked × ${data.likeCount}`); break;
+    case 'member':   console.log(`👋 ${data.user.uniqueId} joined`); break;
+    case 'roomUserSeq': console.log(`👀 Viewers: ${data.viewerCount}`); break;
+  }
+});
+
+ws.on('close', (code, reason) => console.log('Closed:', code, reason.toString()));
+```
+
+```python Python
+import asyncio, websockets, json
+
+async def listen():
+    url = "wss://api.tik.tools?uniqueId=streamer_name&apiKey=YOUR_KEY"
+    async with websockets.connect(url) as ws:
+        print("Connected!")
+        async for message in ws:
+            msg = json.loads(message)
+            event = msg["event"]
+            data = msg.get("data", {})
+            user = data.get("user", {}).get("uniqueId", "")
+            if event == "chat":        print(f"💬 {user}: {data.get('comment', '')}")
+            elif event == "gift":      print(f"🎁 {user} sent {data.get('giftName', '')}")
+            elif event == "like":      print(f"❤️ {user} liked × {data.get('likeCount', 0)}")
+            elif event == "member":    print(f"👋 {user} joined")
+            elif event == "roomUserSeq": print(f"👀 Viewers: {data.get('viewerCount', 0)}")
+
+asyncio.run(listen())
+```
+
+```bash cURL / wscat
+# Install wscat for WebSocket testing:
+npm install -g wscat
+
+# Connect to a live stream:
+wscat -c "wss://api.tik.tools?uniqueId=streamer_name&apiKey=YOUR_KEY"
+
+# Or check if a user is live via REST:
+curl "https://api.tik.tools/webcast/check_alive?apiKey=YOUR_KEY&unique_id=streamer_name"
+```
+
+```java Java
+import org.java_websocket.client.WebSocketClient;
+import org.java_websocket.handshake.ServerHandshake;
+import java.net.URI;
+
+var ws = new WebSocketClient(new URI("wss://api.tik.tools?uniqueId=streamer_name&apiKey=YOUR_KEY")) {
+    public void onMessage(String msg) {
+        var json = new org.json.JSONObject(msg);
+        if (json.getString("event").equals("chat")) {
+            var data = json.getJSONObject("data");
+            System.out.println(data.getJSONObject("user").getString("uniqueId") + ": " + data.getString("comment"));
+        }
+    }
+    public void onOpen(ServerHandshake h) { System.out.println("Connected!"); }
+    public void onClose(int code, String reason, boolean remote) {}
+    public void onError(Exception e) { e.printStackTrace(); }
+};
+ws.connect();
+```
+
+```go Go
+package main
+
+import (
+    "fmt"
+    "log"
+    "github.com/gorilla/websocket"
+)
+
+func main() {
+    url := "wss://api.tik.tools?uniqueId=streamer_name&apiKey=YOUR_KEY"
+    conn, _, err := websocket.DefaultDialer.Dial(url, nil)
+    if err != nil { log.Fatal(err) }
+    defer conn.Close()
+    for {
+        _, msg, err := conn.ReadMessage()
+        if err != nil { break }
+        fmt.Println(string(msg))
+    }
+}
+```
+
+```csharp C#
+using System.Net.WebSockets;
+using System.Text;
+using System.Text.Json;
+
+var ws = new ClientWebSocket();
+await ws.ConnectAsync(new Uri("wss://api.tik.tools?uniqueId=streamer_name&apiKey=YOUR_KEY"), CancellationToken.None);
+var buf = new byte[4096];
+while (ws.State == WebSocketState.Open) {
+    var result = await ws.ReceiveAsync(buf, CancellationToken.None);
+    var msg = Encoding.UTF8.GetString(buf, 0, result.Count);
+    var json = JsonDocument.Parse(msg);
+    if (json.RootElement.GetProperty("event").GetString() == "chat") {
+        var data = json.RootElement.GetProperty("data");
+        Console.WriteLine(data.GetProperty("user").GetProperty("uniqueId") + ": " + data.GetProperty("comment"));
+    }
+}
+```
+</CodeGroup>
+
+## 4. What's Next?
 
 <CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
+  <Card title="WebSocket Events" icon="bolt" href="/websocket/events">
+    See all 30+ event types you can receive.
+  </Card>
+  <Card title="REST API" icon="server" href="/rest-api/overview">
+    Explore signing, room info, rankings, and more.
+  </Card>
+  <Card title="Live Captions" icon="closed-captioning" href="/captions/overview">
+    Add real-time AI transcription to any stream.
+  </Card>
+  <Card title="Authentication" icon="key" href="/authentication">
+    Learn about API keys and JWT tokens for frontend use.
+  </Card>
 </CardGroup>
-
-<Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
-</Note>

@@ -1,0 +1,41 @@
+﻿---
+title: "Gift Info"
+description: "Get the complete gift catalog with names, IDs, and diamond values."
+---
+
+## `GET` `/webcast/gift_info`
+
+Get the complete gift catalog with names, IDs, and diamond values.
+
+### Authentication
+
+Pass your API key as a query parameter:
+
+```
+/webcast/gift_info?apiKey=YOUR_API_KEY
+```
+
+### Example
+
+<CodeGroup>
+```javascript Node.js
+const res = await fetch('https://api.tik.tools/webcast/gift_info?apiKey=YOUR_KEY');
+const data = await res.json();
+console.log(data);
+```
+
+```python Python
+import requests
+res = requests.get('https://api.tik.tools/webcast/gift_info',
+    params={'apiKey': 'YOUR_KEY'})
+print(res.json())
+```
+
+```bash cURL
+curl \"https://api.tik.tools/webcast/gift_info?apiKey=YOUR_KEY\"
+```
+</CodeGroup>
+
+<Note>
+See the [REST API Overview](/rest-api/overview) for response format and error handling.
+</Note>
