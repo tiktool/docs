@@ -1,0 +1,81 @@
+---
+title: "Python SDK"
+description: "Official TikTool Python SDK — connect to TikTok Live streams with a decorator-based API."
+---
+
+## Installation
+
+```bash
+pip install tiktok-live-api
+```
+
+## Quick Start
+
+```python
+from tiktok_live_api import TikTokLive
+
+client = TikTokLive("streamer_username")
+
+@client.on("connected")
+def on_connected(event):
+    print(f"Connected to @{event['uniqueId']}")
+
+@client.on("chat")
+def on_chat(event):
+    print(f"[chat] {event['user']['uniqueId']}: {event['comment']}")
+
+@client.on("gift")
+def on_gift(event):
+    diamonds = event.get("diamondCount", 0)
+    print(f"[gift] {event['user']['uniqueId']} sent {event['giftName']} ({diamonds} diamonds)")
+
+@client.on("like")
+def on_like(event):
+    print(f"[like] {event['user']['uniqueId']} liked (total: {event['totalLikes']})")
+
+@client.on("follow")
+def on_follow(event):
+    print(f"[follow] {event['user']['uniqueId']} followed")
+
+@client.on("roomUserSeq")
+def on_viewers(event):
+    print(f"[viewers] {event['viewerCount']} watching")
+
+client.run()
+```
+
+## Live Captions
+
+```python
+from tiktok_live_api import TikTokCaptions
+
+captions = TikTokCaptions(
+    "streamer_username",
+    translate="en",
+    diarization=True,
+)
+
+@captions.on("caption")
+def on_caption(event):
+    speaker = event.get("speaker", "")
+    text = event["text"]
+    is_final = event.get("isFinal", False)
+    status = "FINAL" if is_final else "partial"
+    print(f"[{status}] [{speaker}] {text}")
+
+@captions.on("translation")
+def on_translation(event):
+    print(f"  -> {event['text']}")
+
+captions.run()
+```
+
+## Events
+
+All events from the [WebSocket Events](/websocket/events) reference are available via the `@client.on()` decorator.
+
+## Source Code
+
+<Card title="PyPI Package" icon="python" href="https://pypi.org/project/tiktok-live-api/">
+  MIT-licensed. Available on PyPI.
+</Card>

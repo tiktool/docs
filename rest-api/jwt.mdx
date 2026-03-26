@@ -1,0 +1,48 @@
+﻿---
+title: "JWT Authentication"
+description: "Generate a JWT token for secure frontend WebSocket connections."
+---
+
+## `POST` `/authentication/jwt`
+
+Generate a JWT token for secure frontend WebSocket connections.
+
+### Authentication
+
+Pass your API key as a query parameter:
+
+```
+/authentication/jwt?apiKey=YOUR_API_KEY
+```
+
+### Example
+
+<CodeGroup>
+```javascript Node.js
+const res = await fetch('https://api.tik.tools/authentication/jwt?apiKey=YOUR_KEY', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ unique_id: 'username' })
+});
+const data = await res.json();
+console.log(data);
+```
+
+```python Python
+import requests
+res = requests.post('https://api.tik.tools/authentication/jwt',
+    params={'apiKey': 'YOUR_KEY'},
+    json={'unique_id': 'username'})
+print(res.json())
+```
+
+```bash cURL
+curl -X POST \"https://api.tik.tools/authentication/jwt?apiKey=YOUR_KEY\" \
+  -H "Content-Type: application/json" \
+  -d '{"unique_id": "username"}'
+```
+</CodeGroup>
+
+<Note>
+See the [REST API Overview](/rest-api/overview) for response format and error handling.
+</Note>

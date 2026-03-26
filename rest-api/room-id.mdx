@@ -1,0 +1,48 @@
+﻿---
+title: "Room ID"
+description: "Resolve a TikTok username to their current live room ID."
+---
+
+## `POST` `/webcast/room_id`
+
+Resolve a TikTok username to their current live room ID.
+
+### Authentication
+
+Pass your API key as a query parameter:
+
+```
+/webcast/room_id?apiKey=YOUR_API_KEY
+```
+
+### Example
+
+<CodeGroup>
+```javascript Node.js
+const res = await fetch('https://api.tik.tools/webcast/room_id?apiKey=YOUR_KEY', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ unique_id: 'username' })
+});
+const data = await res.json();
+console.log(data);
+```
+
+```python Python
+import requests
+res = requests.post('https://api.tik.tools/webcast/room_id',
+    params={'apiKey': 'YOUR_KEY'},
+    json={'unique_id': 'username'})
+print(res.json())
+```
+
+```bash cURL
+curl -X POST \"https://api.tik.tools/webcast/room_id?apiKey=YOUR_KEY\" \
+  -H "Content-Type: application/json" \
+  -d '{"unique_id": "username"}'
+```
+</CodeGroup>
+
+<Note>
+See the [REST API Overview](/rest-api/overview) for response format and error handling.
+</Note>

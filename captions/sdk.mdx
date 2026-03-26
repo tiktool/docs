@@ -1,0 +1,92 @@
+---
+title: "Captions SDK"
+description: "Use the TikTokCaptions class from the Node.js SDK for easy caption integration."
+---
+
+## Node.js SDK
+
+The `@tiktool/live` package includes a `TikTokCaptions` class for simplified caption integration.
+
+```bash
+npm install @tiktool/live
+```
+
+### Usage
+
+```javascript
+import { TikTokCaptions } from '@tiktool/live';
+
+const captions = new TikTokCaptions({
+  apiKey: process.env.TIKTOOL_API_KEY,
+  uniqueId: 'streamer_name',
+  translate: 'en',
+  diarization: true,
+});
+
+captions.on('caption', (event) => {
+  console.log(`[${event.speaker}] ${event.text}`);
+});
+
+captions.on('translation', (event) => {
+  console.log(`  → ${event.text}`);
+});
+
+captions.on('credits', (event) => {
+  console.log(`${event.remaining}/${event.total} min remaining`);
+});
+
+captions.on('credits_low', (event) => {
+  console.warn(`Low credits! ${event.remaining} min left`);
+});
+
+await captions.start();
+// captions.stop() to end
+```
+
+## Python SDK
+
+```bash
+pip install tiktok-live-api
+```
+
+### Usage
+
+```python
+from tiktok_live_api import TikTokCaptions
+
+captions = TikTokCaptions(
+    "streamer_username",
+    translate="en",
+    diarization=True,
+)
+
+@captions.on("connected")
+def on_connected(event):
+    print(f"Listening to @{event['uniqueId']}")
+
+@captions.on("caption")
+def on_caption(event):
+    speaker = event.get("speaker", "")
+    text = event["text"]
+    is_final = event.get("isFinal", False)
+    status = "FINAL" if is_final else "partial"
+    print(f"[{status}] [{speaker}] {text}")
+
+@captions.on("translation")
+def on_translation(event):
+    print(f"  -> {event['text']}")
+
+captions.run()
+```
+
+## Events
+
+| Event | Description |
+|-------|-------------|
+| `caption` | Transcribed speech (partial or final) |
+| `translation` | Translated text |
+| `credits` | Credit usage update |
+| `credits_low` | Low credit warning |
+| `connected` | Connection established |
+| `disconnected` | Connection closed |
+| `error` | Error occurred |

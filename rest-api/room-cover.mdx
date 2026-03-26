@@ -1,0 +1,41 @@
+﻿---
+title: "Room Cover"
+description: "Get the cover image URL of an active live stream."
+---
+
+## `GET` `/webcast/room_cover`
+
+Get the cover image URL of an active live stream.
+
+### Authentication
+
+Pass your API key as a query parameter:
+
+```
+/webcast/room_cover?apiKey=YOUR_API_KEY
+```
+
+### Example
+
+<CodeGroup>
+```javascript Node.js
+const res = await fetch('https://api.tik.tools/webcast/room_cover?apiKey=YOUR_KEY');
+const data = await res.json();
+console.log(data);
+```
+
+```python Python
+import requests
+res = requests.get('https://api.tik.tools/webcast/room_cover',
+    params={'apiKey': 'YOUR_KEY'})
+print(res.json())
+```
+
+```bash cURL
+curl \"https://api.tik.tools/webcast/room_cover?apiKey=YOUR_KEY\"
+```
+</CodeGroup>
+
+<Note>
+See the [REST API Overview](/rest-api/overview) for response format and error handling.
+</Note>

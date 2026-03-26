@@ -1,0 +1,78 @@
+---
+title: "Error Codes"
+description: "HTTP status codes and API error responses returned by the TikTool API."
+---
+
+## HTTP Status Codes
+
+| Code | Meaning | Description |
+|------|---------|-------------|
+| `200` | OK | Request succeeded |
+| `400` | Bad Request | Missing or invalid parameters |
+| `401` | Unauthorized | Missing or invalid API key |
+| `403` | Forbidden | API key doesn't have permission for this action |
+| `404` | Not Found | Endpoint doesn't exist or user not found |
+| `429` | Too Many Requests | Rate limit exceeded — wait and retry |
+| `500` | Internal Server Error | Server-side error — retry with backoff |
+| `503` | Service Unavailable | Server temporarily overloaded |
+
+## Error Response Format
+
+All errors return a JSON body with `status_code` and `message`:
+
+```json
+{
+  "status_code": 401,
+  "message": "Invalid or expired API key"
+}
+```
+
+## Common Errors
+
+### Invalid API Key
+
+```json
+{
+  "status_code": 401,
+  "message": "Invalid API key. Get a free key at https://tik.tools"
+}
+```
+
+**Fix:** Check your API key in the [Dashboard](https://tik.tools/dashboard). Ensure you're passing it as `apiKey` query parameter.
+
+### User Not Live
+
+```json
+{
+  "status_code": 400,
+  "message": "User is not currently live"
+}
+```
+
+**Fix:** Use [`/webcast/check_alive`](/rest-api/check-alive) to verify the user is live before connecting.
+
+### Rate Limit Exceeded
+
+```json
+{
+  "status_code": 429,
+  "message": "Rate limit exceeded. Retry after 60 seconds."
+}
+```
+
+**Fix:** Implement exponential backoff. Check `X-RateLimit-Remaining` headers to avoid hitting limits. Consider upgrading your tier.
+
+### Connection Limit
+
+```json
+{
+  "status_code": 403,
+  "message": "WebSocket connection limit reached for your tier"
+}
+```
+
+**Fix:** Close unused WebSocket connections. Upgrade to a higher tier for more concurrent connections.
+
+## WebSocket Close Codes
+
+For WebSocket-specific error codes, see [WebSocket Close Codes](/websocket/close-codes).

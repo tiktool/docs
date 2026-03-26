@@ -1,0 +1,159 @@
+---
+title: "Captions WebSocket"
+description: "Connect to the TikTool Captions WebSocket for real-time AI transcription of TikTok Live streams."
+---
+
+## Connection URL
+
+```
+wss://api.tik.tools/captions?uniqueId=STREAMER&apiKey=YOUR_KEY&translate=LANG&max_duration_minutes=120
+```
+
+### Query Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `uniqueId` | string | Yes | TikTok username to transcribe |
+| `apiKey` | string | Yes | Your API key |
+| `translate` | string | No | Target language code (e.g. `en`, `es`, `ja`) |
+| `max_duration_minutes` | number | No | Max transcription duration in minutes |
+| `diarization` | boolean | No | Enable speaker identification |
+
+## Message Types
+
+### caption
+
+Transcribed speech from the streamer.
+
+```json
+{
+  "type": "caption",
+  "text": "Hello everyone welcome to the stream",
+  "isFinal": true,
+  "speaker": "Speaker 1",
+  "language": "en",
+  "timestamp": 1234567890
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `text` | string | Transcribed text |
+| `isFinal` | boolean | `true` for final transcription, `false` for partial |
+| `speaker` | string | Speaker label (when diarization is enabled) |
+| `language` | string | Detected language code |
+
+### translation
+
+Translated text (when `translate` parameter is set).
+
+```json
+{
+  "type": "translation",
+  "text": "Hola a todos bienvenidos al stream",
+  "language": "es"
+}
+```
+
+### credits
+
+Credit usage updates.
+
+```json
+{
+  "type": "credits",
+  "remaining": 450,
+  "total": 500,
+  "used": 50
+}
+```
+
+### credits_low
+
+Warning when credits are running low.
+
+```json
+{
+  "type": "credits_low",
+  "remaining": 10,
+  "total": 500
+}
+```
+
+### status
+
+Connection status updates.
+
+```json
+{
+  "type": "status",
+  "status": "connected"
+}
+```
+
+## Client Commands
+
+Send JSON commands to control the session:
+
+### Change Language
+
+```json
+{"action": "setLanguage", "language": "es"}
+```
+
+### Stop Transcription
+
+```json
+{"action": "stop"}
+```
+
+## Full Example
+
+<CodeGroup>
+```javascript Node.js
+import WebSocket from 'ws';
+
+const ws = new WebSocket(
+  'wss://api.tik.tools/captions?uniqueId=streamer&apiKey=YOUR_KEY&translate=en&max_duration_minutes=120'
+);
+
+ws.on('message', (data) => {
+  const msg = JSON.parse(data.toString());
+  switch (msg.type) {
+    case 'caption':
+      const prefix = msg.speaker ? `[${msg.speaker}] ` : '';
+      console.log(`${prefix}${msg.text}${msg.isFinal ? ' ✓' : '...'}`);
+      break;
+    case 'translation':
+      console.log(`  → ${msg.text}`);
+      break;
+    case 'credits':
+      console.log(`Credits: ${msg.remaining}/${msg.total} min remaining`);
+      break;
+    case 'status':
+      console.log(`Status: ${msg.status}`);
+      break;
+  }
+});
+```
+
+```python Python
+import websocket, json
+
+def on_message(ws, message):
+    msg = json.loads(message)
+    if msg['type'] == 'caption':
+        speaker = f"[{msg.get('speaker', '')}] " if msg.get('speaker') else ''
+        final = ' ✓' if msg.get('isFinal') else '...'
+        print(f"{speaker}{msg['text']}{final}")
+    elif msg['type'] == 'translation':
+        print(f"  → {msg['text']}")
+    elif msg['type'] == 'credits':
+        print(f"Credits: {msg['remaining']}/{msg['total']}")
+
+ws = websocket.WebSocketApp(
+    'wss://api.tik.tools/captions?uniqueId=streamer&apiKey=YOUR_KEY&translate=en&max_duration_minutes=120',
+    on_message=on_message)
+ws.run_forever()
+```
+</CodeGroup>

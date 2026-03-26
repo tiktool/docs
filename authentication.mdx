@@ -1,0 +1,94 @@
+---
+title: "Authentication"
+description: "Learn how to authenticate with the TikTool API using API keys and JWT tokens."
+---
+
+## API Key Authentication
+
+Every request requires an API key. Pass it as a query parameter:
+
+```
+wss://api.tik.tools?uniqueId=streamer&apiKey=YOUR_API_KEY
+```
+
+```
+https://api.tik.tools/webcast/check_alive?apiKey=YOUR_API_KEY&unique_id=streamer
+```
+
+<Warning>
+Never expose your API key in frontend code. Use JWT tokens for client-side applications.
+</Warning>
+
+### Getting Your API Key
+
+1. Sign up at [tik.tools](https://tik.tools)
+2. Go to the [Dashboard](https://tik.tools/dashboard)
+3. Your free sandbox key is generated automatically
+4. Upgrade to Basic, Pro, or Ultra for higher limits
+
+## JWT Authentication (Frontend)
+
+For web applications where the frontend needs to connect directly to the WebSocket, use JWT tokens to avoid exposing your API key.
+
+### How It Works
+
+1. **Server-side**: Generate a JWT using your API key via the `/authentication/jwt` endpoint
+2. **Client-side**: Connect to the WebSocket using the JWT token instead of the API key
+
+### Generate a JWT
+
+<CodeGroup>
+```javascript Node.js
+const res = await fetch('https://api.tik.tools/authentication/jwt?apiKey=YOUR_KEY', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    expire_after: 3600,           // 1 hour
+    allowed_creators: ['streamer1'], // Optional: restrict to specific creators
+    max_websockets: 1,            // Max concurrent connections
+  })
+});
+const { data } = await res.json();
+const jwtToken = data.token;
+```
+
+```python Python
+import requests
+res = requests.post('https://api.tik.tools/authentication/jwt',
+    params={'apiKey': 'YOUR_KEY'},
+    json={'expire_after': 3600, 'allowed_creators': ['streamer1']})
+token = res.json()['data']['token']
+```
+</CodeGroup>
+
+### Use the JWT in Frontend
+
+```javascript
+// Client-side JavaScript — API key never exposed
+const ws = new WebSocket(`wss://api.tik.tools?uniqueId=streamer1&jwtKey=${jwtToken}`);
+
+ws.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+  console.log(data.event, data.data);
+};
+```
+
+### JWT Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `expire_after` | number | No | Seconds until expiry (default: 3600) |
+| `allowed_creators` | string[] | No | Restrict connections to specific TikTok usernames |
+| `max_websockets` | number | No | Maximum concurrent WebSocket connections (default: 1) |
+
+## Rate Limit Headers
+
+Every API response includes rate limit information in headers:
+
+| Header | Description |
+|--------|-------------|
+| `X-RateLimit-Limit` | Maximum requests per window |
+| `X-RateLimit-Remaining` | Remaining requests in current window |
+| `X-RateLimit-Reset` | Unix timestamp when the window resets |
+
+See [Rate Limits](/reference/rate-limits) for tier-specific limits.

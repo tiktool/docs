@@ -1,0 +1,63 @@
+---
+title: "Live Captions Overview"
+description: "The only TikTok Live caption API. Real-time AI transcription and translation for any TikTok Live stream."
+---
+
+## What Are Live Captions?
+
+TikTool Live Captions provides **real-time AI-powered transcription and translation** for any TikTok Live stream. Convert spoken audio into text with sub-second latency, detect the speaker's language automatically, and translate to 50+ languages.
+
+<CardGroup cols={2}>
+  <Card title="WebSocket API" icon="plug" href="/captions/websocket">
+    Connect via WebSocket for real-time caption events.
+  </Card>
+  <Card title="Node.js SDK" icon="js" href="/captions/sdk">
+    Use the TikTokCaptions class for easy integration.
+  </Card>
+</CardGroup>
+
+## Features
+
+- **Auto Language Detection** — Automatically detects the speaker's language
+- **50+ Translation Languages** — Translate captions in real-time
+- **Speaker Diarization** — Identify different speakers
+- **Partial & Final Results** — Get instant partial captions and polished final text
+- **Credit-Based Pricing** — 1 credit = 1 minute of audio in 1 language
+
+## Caption Credit Pricing
+
+| Pack | Credits | Price | Rate |
+|------|---------|-------|------|
+| Starter | 1,000 | $10 | $0.010/credit |
+| Creator | 5,000 | $35 | $0.007/credit |
+| Agency | 20,000 | $100 | $0.005/credit |
+
+<Note>
+Caption credits require an active Basic subscription or higher. Multi-language translation multiplies credit usage (2 languages = 2× credits).
+</Note>
+
+## Quick Example
+
+```javascript
+import WebSocket from 'ws';
+
+const ws = new WebSocket(
+  'wss://api.tik.tools/captions?uniqueId=streamer&apiKey=YOUR_KEY&translate=en&max_duration_minutes=120'
+);
+
+ws.on('message', (data) => {
+  const msg = JSON.parse(data.toString());
+  switch (msg.type) {
+    case 'caption':
+      const prefix = msg.speaker ? `[${msg.speaker}] ` : '';
+      console.log(`${prefix}${msg.text}${msg.isFinal ? ' ✓' : '...'}`);
+      break;
+    case 'translation':
+      console.log(`  → ${msg.text}`);
+      break;
+    case 'credits':
+      console.log(`Credits: ${msg.remaining}/${msg.total} min remaining`);
+      break;
+  }
+});
+```

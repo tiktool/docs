@@ -1,0 +1,344 @@
+---
+title: "WebSocket Events"
+description: "Complete reference for all 30+ real-time events available via the TikTok Live WebSocket API."
+---
+
+## Event Types
+
+Every WebSocket message contains an `event` field and a `data` object. Below is the complete list of events.
+
+### chat
+
+A viewer sends a chat message.
+
+```json
+{
+  "event": "chat",
+  "data": {
+    "type": "chat",
+    "comment": "Hello streamer!",
+    "user": {
+      "uniqueId": "viewer123",
+      "nickname": "Cool Viewer",
+      "userId": "6892636847263982593",
+      "profilePictureUrl": "https://...",
+      "followRole": 0,
+      "userBadges": [],
+      "isModerator": false,
+      "isSubscriber": false
+    },
+    "emotes": []
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `comment` | string | The chat message text |
+| `user` | object | Sender's profile info |
+| `user.uniqueId` | string | TikTok username |
+| `user.nickname` | string | Display name |
+| `user.userId` | string | Numeric user ID |
+| `user.isModerator` | boolean | Whether user is a moderator |
+| `user.isSubscriber` | boolean | Whether user is a subscriber |
+| `emotes` | array | Custom emotes used in the message |
+
+---
+
+### gift
+
+A viewer sends a virtual gift.
+
+```json
+{
+  "event": "gift",
+  "data": {
+    "type": "gift",
+    "giftName": "Rose",
+    "giftId": 5655,
+    "diamondCount": 1,
+    "repeatCount": 5,
+    "repeatEnd": true,
+    "giftType": 1,
+    "giftPictureUrl": "https://...",
+    "user": {
+      "uniqueId": "gifter",
+      "nickname": "Gift Sender",
+      "userId": "123456"
+    }
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `giftName` | string | Name of the gift |
+| `giftId` | number | Gift identifier |
+| `diamondCount` | number | Diamond value of the gift |
+| `repeatCount` | number | How many times this gift was sent in a streak |
+| `repeatEnd` | boolean | `true` when the gift streak ends (final count) |
+| `giftType` | number | 1 = repeatable, 2 = non-repeatable |
+| `giftPictureUrl` | string | URL of the gift image |
+
+<Note>
+For streak gifts (`giftType: 1`), wait for `repeatEnd: true` to get the final count. Intermediate events show the running count.
+</Note>
+
+---
+
+### like
+
+A viewer sends likes.
+
+```json
+{
+  "event": "like",
+  "data": {
+    "type": "like",
+    "likeCount": 15,
+    "totalLikeCount": 5678,
+    "user": { "uniqueId": "liker", "nickname": "Like Fan" }
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `likeCount` | number | Likes sent in this batch |
+| `totalLikeCount` | number | Total likes in the stream |
+
+---
+
+### member
+
+A viewer joins the live stream.
+
+```json
+{
+  "event": "member",
+  "data": {
+    "type": "member",
+    "user": { "uniqueId": "new_viewer", "nickname": "New Viewer" },
+    "actionId": 1
+  }
+}
+```
+
+---
+
+### follow
+
+A viewer follows the streamer.
+
+```json
+{
+  "event": "follow",
+  "data": {
+    "type": "follow",
+    "user": { "uniqueId": "new_follower", "nickname": "New Follower" }
+  }
+}
+```
+
+---
+
+### share
+
+A viewer shares the live stream.
+
+```json
+{
+  "event": "share",
+  "data": {
+    "type": "share",
+    "user": { "uniqueId": "sharer", "nickname": "Share User" }
+  }
+}
+```
+
+---
+
+### roomUserSeq
+
+Periodic viewer count update.
+
+```json
+{
+  "event": "roomUserSeq",
+  "data": {
+    "type": "roomUserSeq",
+    "viewerCount": 1234,
+    "topViewers": [
+      { "user": { "uniqueId": "top1" }, "coinCount": 500 }
+    ]
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `viewerCount` | number | Current viewer count |
+| `topViewers` | array | Top gifters with coin counts |
+
+---
+
+### subscribe
+
+A viewer subscribes to the streamer.
+
+```json
+{
+  "event": "subscribe",
+  "data": {
+    "type": "subscribe",
+    "user": { "uniqueId": "subscriber", "nickname": "Subscriber" }
+  }
+}
+```
+
+---
+
+### linkMicBattle
+
+Battle status update — when two streamers enter a live battle.
+
+```json
+{
+  "event": "linkMicBattle",
+  "data": {
+    "type": "linkMicBattle",
+    "battleUsers": [
+      { "uniqueId": "streamer1", "score": 150 },
+      { "uniqueId": "streamer2", "score": 120 }
+    ],
+    "battleStatus": 1
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `battleUsers` | array | Battling streamers with scores |
+| `battleStatus` | number | 1 = started, 2 = in progress, 3 = ended |
+
+---
+
+### roomPin
+
+A message is pinned in the live room.
+
+```json
+{
+  "event": "roomPin",
+  "data": {
+    "type": "roomPin",
+    "pinnedMessage": "Welcome to the stream!",
+    "user": { "uniqueId": "streamer" }
+  }
+}
+```
+
+---
+
+### emote
+
+An animated emote is sent.
+
+```json
+{
+  "event": "emote",
+  "data": {
+    "type": "emote",
+    "emoteId": "7012345",
+    "emoteUrl": "https://...",
+    "user": { "uniqueId": "emoter" }
+  }
+}
+```
+
+---
+
+### envelope
+
+A treasure box / envelope event.
+
+```json
+{
+  "event": "envelope",
+  "data": {
+    "type": "envelope",
+    "coins": 100,
+    "canOpen": 5,
+    "timestamp": 1234567890
+  }
+}
+```
+
+---
+
+### questionNew
+
+A Q&A question is submitted.
+
+```json
+{
+  "event": "questionNew",
+  "data": {
+    "type": "questionNew",
+    "questionText": "When did you start streaming?",
+    "user": { "uniqueId": "curious_viewer" }
+  }
+}
+```
+
+---
+
+### roomInfo
+
+Initial room metadata sent immediately after connecting.
+
+```json
+{
+  "event": "roomInfo",
+  "roomId": "71234567890",
+  "uniqueId": "streamer",
+  "roomInfo": {
+    "title": "Stream Title",
+    "user_count": 1234,
+    "like_count": 5678,
+    "owner": { "nickname": "Streamer Name", "uniqueId": "streamer" }
+  }
+}
+```
+
+---
+
+## User Object
+
+Most events include a `user` object with this structure:
+
+```json
+{
+  "uniqueId": "username",
+  "nickname": "Display Name",
+  "userId": "6892636847263982593",
+  "profilePictureUrl": "https://...",
+  "followRole": 0,
+  "userBadges": [],
+  "isModerator": false,
+  "isSubscriber": false,
+  "isNewGifter": false,
+  "topGifterRank": null
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `uniqueId` | string | TikTok username |
+| `nickname` | string | Display name |
+| `userId` | string | Numeric user ID |
+| `profilePictureUrl` | string | Avatar URL |
+| `followRole` | number | 0 = not following, 1 = following, 2 = friend |
+| `isModerator` | boolean | Whether user is a room moderator |
+| `isSubscriber` | boolean | Whether user is a subscriber |
+| `topGifterRank` | number\|null | Rank in top gifter leaderboard |

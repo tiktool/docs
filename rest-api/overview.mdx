@@ -1,0 +1,76 @@
+---
+title: "REST API Overview"
+description: "13+ REST endpoints for signing TikTok URLs, checking live status, fetching room data, rankings, and more."
+---
+
+## Base URL
+
+```
+https://api.tik.tools
+```
+
+All endpoints require an `apiKey` query parameter.
+
+## Authentication
+
+Pass your API key as a query parameter on every request:
+
+```
+https://api.tik.tools/webcast/check_alive?apiKey=YOUR_KEY&unique_id=streamer
+```
+
+## Response Format
+
+All endpoints return JSON with a consistent structure:
+
+```json
+{
+  "status_code": 0,
+  "data": { ... }
+}
+```
+
+A `status_code` of `0` indicates success. Non-zero codes indicate an error with a `message` field.
+
+## Endpoints
+
+### Stream Discovery
+
+| Method | Endpoint | Description | Min Tier |
+|--------|----------|-------------|----------|
+| `GET` | [`/webcast/check_alive`](/rest-api/check-alive) | Check if a user is live | Sandbox |
+| `POST` | [`/webcast/bulk_live_check`](/rest-api/bulk-live-check) | Batch live status check (up to 100 users) | Sandbox |
+| `POST` | [`/webcast/room_id`](/rest-api/room-id) | Resolve username to room ID | Sandbox |
+| `GET` | [`/webcast/hashtag_list`](/rest-api/hashtag-list) | Trending live hashtags | Sandbox |
+
+### Stream Data
+
+| Method | Endpoint | Description | Min Tier |
+|--------|----------|-------------|----------|
+| `POST` | [`/webcast/room_info`](/rest-api/room-info) | Stream metadata, viewer count, host profile | Sandbox |
+| `POST` | [`/webcast/room_video`](/rest-api/room-video) | HLS/FLV stream URLs | Sandbox |
+| `GET` | [`/webcast/room_cover`](/rest-api/room-cover) | Stream cover/thumbnail image | Sandbox |
+| `GET` | [`/webcast/rankings`](/rest-api/rankings) | Real-time gifter leaderboard | Sandbox |
+| `POST` | [`/webcast/fetch`](/rest-api/fetch) | HTTP long-polling for events | Sandbox |
+
+### Signing & Credentials
+
+| Method | Endpoint | Description | Min Tier |
+|--------|----------|-------------|----------|
+| `POST` | [`/webcast/sign_url`](/rest-api/sign-url) | Sign any TikTok URL (X-Bogus) | Sandbox |
+| `POST` | [`/webcast/sign_websocket`](/rest-api/sign-websocket) | Sign a WebSocket URL | Sandbox |
+| `POST` | [`/webcast/ws_credentials`](/rest-api/ws-credentials) | Pre-signed WS credentials | Sandbox |
+
+### Identity & Info
+
+| Method | Endpoint | Description | Min Tier |
+|--------|----------|-------------|----------|
+| `POST` | [`/webcast/resolve_user_ids`](/rest-api/resolve-user-ids) | Resolve numeric user IDs to usernames | Sandbox |
+| `GET` | [`/webcast/gift_info`](/rest-api/gift-info) | Gift catalog with diamond values | Sandbox |
+
+### Account
+
+| Method | Endpoint | Description | Min Tier |
+|--------|----------|-------------|----------|
+| `GET` | [`/webcast/rate_limits`](/rest-api/rate-limits) | Check your quota and limits | Sandbox |
+| `POST` | [`/authentication/jwt`](/rest-api/jwt) | Generate JWT for frontend auth | Sandbox |

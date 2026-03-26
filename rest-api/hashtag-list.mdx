@@ -1,0 +1,41 @@
+﻿---
+title: "Hashtag List"
+description: "Get currently trending live stream hashtags from TikTok."
+---
+
+## `GET` `/webcast/hashtag_list`
+
+Get currently trending live stream hashtags from TikTok.
+
+### Authentication
+
+Pass your API key as a query parameter:
+
+```
+/webcast/hashtag_list?apiKey=YOUR_API_KEY
+```
+
+### Example
+
+<CodeGroup>
+```javascript Node.js
+const res = await fetch('https://api.tik.tools/webcast/hashtag_list?apiKey=YOUR_KEY');
+const data = await res.json();
+console.log(data);
+```
+
+```python Python
+import requests
+res = requests.get('https://api.tik.tools/webcast/hashtag_list',
+    params={'apiKey': 'YOUR_KEY'})
+print(res.json())
+```
+
+```bash cURL
+curl \"https://api.tik.tools/webcast/hashtag_list?apiKey=YOUR_KEY\"
+```
+</CodeGroup>
+
+<Note>
+See the [REST API Overview](/rest-api/overview) for response format and error handling.
+</Note>

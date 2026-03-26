@@ -1,0 +1,79 @@
+---
+title: "Unreal Engine Plugin"
+description: "Integrate TikTok Live events into Unreal Engine 5 games with the TikToolLive plugin."
+---
+
+## Overview
+
+The TikToolLive Unreal Engine plugin brings real-time TikTok Live events directly into your UE5 project. Build interactive games controlled by live stream viewers — chat-driven gameplay, gift-triggered effects, battle minigames, and more.
+
+## Installation
+
+1. Download the plugin from the [TikTool Dashboard](https://tik.tools/dashboard)
+2. Extract to your project's `Plugins/` directory
+3. Enable the plugin in your `.uproject` file or via Edit → Plugins
+
+## Quick Start (C++)
+
+```cpp
+#include "TikToolLiveSubsystem.h"
+
+void AMyChatActor::BeginPlay()
+{
+    Super::BeginPlay();
+    auto* TikTool = GetGameInstance()->GetSubsystem<UTikToolLiveSubsystem>();
+    if (!TikTool) return;
+
+    // Bind to chat events
+    TikTool->OnChatEvent.AddDynamic(this, &AMyChatActor::HandleChat);
+    TikTool->OnGiftEvent.AddDynamic(this, &AMyChatActor::HandleGift);
+
+    // Connect (uses DefaultUniqueId from Project Settings)
+    TikTool->Connect();
+}
+
+void AMyChatActor::HandleChat(const FTikToolChatEvent& Event)
+{
+    UE_LOG(LogTemp, Log, TEXT("%s: %s"),
+        *Event.User.Nickname, *Event.Comment);
+}
+
+void AMyChatActor::HandleGift(const FTikToolGiftEvent& Event)
+{
+    UE_LOG(LogTemp, Log, TEXT("%s sent %s x%d"),
+        *Event.User.Nickname, *Event.GiftName, Event.RepeatCount);
+}
+```
+
+## Available Delegates
+
+| Delegate | Event Struct | Description |
+|----------|-------------|-------------|
+| `OnChatEvent` | `FTikToolChatEvent` | Chat messages |
+| `OnGiftEvent` | `FTikToolGiftEvent` | Virtual gifts |
+| `OnLikeEvent` | `FTikToolLikeEvent` | Likes |
+| `OnMemberEvent` | `FTikToolMemberEvent` | Viewer joins |
+| `OnFollowEvent` | `FTikToolFollowEvent` | New followers |
+| `OnViewerCountEvent` | `FTikToolViewerCountEvent` | Viewer count updates |
+| `OnBattleEvent` | `FTikToolBattleEvent` | Battle status updates |
+| `OnConnected` | — | Connection established |
+| `OnDisconnected` | — | Connection lost |
+
+## Project Settings
+
+Configure the plugin in **Project Settings → TikToolLive**:
+
+| Setting | Description |
+|---------|-------------|
+| `API Key` | Your TikTool API key |
+| `Default UniqueId` | TikTok username to connect to by default |
+| `Auto Connect` | Connect automatically on game start |
+| `Auto Reconnect` | Reconnect on disconnection |
+
+## Use Cases
+
+- **Chat-driven games** — Viewers vote or control game elements via chat commands
+- **Gift effects** — Trigger visual effects, spawn items, or buff players when gifts are sent
+- **Battle minigames** — Create competitive games synced with TikTok's battle system
+- **Leaderboards** — Display top gifters and most active viewers in-game
+- **Crowd control** — Let viewers influence the game world in real-time
