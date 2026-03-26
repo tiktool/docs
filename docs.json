@@ -20,7 +20,7 @@
           {
             "group": "Getting Started",
             "pages": [
-              "introduction",
+              "index",
               "quickstart",
               "authentication"
             ]
@@ -135,13 +135,5 @@
       "discord": "https://discord.gg/tiktool",
       "x": "https://x.com/AnyStreamIO"
     }
-  },
-  "seo": {
-    "indexHiddenPages": false
-  },
-  "metadata": {
-    "og:site_name": "TikTool Documentation",
-    "og:image": "https://tik.tools/og-image.png",
-    "twitter:site": "@AnyStreamIO"
   }
 }

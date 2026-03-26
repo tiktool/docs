@@ -1,97 +1,143 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: "TikTok Live API Documentation"
+sidebarTitle: "Introduction"
+description: "Connect to any TikTok LIVE stream and receive real-time chat, gifts, likes, viewer counts, and battle data. Code examples in 6 languages. Free sandbox — no credit card needed."
 ---
 
-## Setting up
+<Note>
+**Base URL:** `wss://api.tik.tools` (WebSocket) · `https://api.tik.tools` (REST)
+</Note>
 
-Get your documentation site up and running in minutes.
+## Welcome to TikTool
 
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
+TikTool is the **developer-first TikTok LIVE API**. Connect to any live stream and receive real-time events — chat messages, virtual gifts, likes, follows, viewer counts, battles, and more — with **sub-50ms latency** and **99.9% uptime**.
+
+<CardGroup cols={2}>
+  <Card title="Quick Start" icon="rocket" href="/quickstart">
+    Get connected to a live stream in under 30 seconds with code in 6 languages.
+  </Card>
+  <Card title="WebSocket API" icon="plug" href="/websocket/connection">
+    Real-time events via WebSocket. 30+ event types. Sub-50ms latency.
+  </Card>
+  <Card title="REST API" icon="server" href="/rest-api/overview">
+    16 REST endpoints for signing, live checks, room data, rankings, and more.
+  </Card>
+  <Card title="Live Captions" icon="closed-captioning" href="/captions/overview">
+    Real-time AI transcription and translation for any TikTok Live stream.
+  </Card>
+</CardGroup>
+
+## Connect in 5 Lines
+
+<CodeGroup>
+```javascript Node.js
+import WebSocket from 'ws';
+
+const ws = new WebSocket('wss://api.tik.tools?uniqueId=streamer&apiKey=YOUR_KEY');
+ws.on('message', (raw) => {
+  const { event, data } = JSON.parse(raw);
+  if (event === 'chat') console.log(`${data.user.uniqueId}: ${data.comment}`);
+  if (event === 'gift') console.log(`🎁 ${data.user.uniqueId} sent ${data.giftName} (${data.diamondCount}💎)`);
+});
+```
+
+```python Python
+import asyncio, websockets, json
+
+async def listen():
+    async with websockets.connect("wss://api.tik.tools?uniqueId=streamer&apiKey=YOUR_KEY") as ws:
+        async for message in ws:
+            msg = json.loads(message)
+            if msg["event"] == "chat":
+                print(f"{msg['data']['user']['uniqueId']}: {msg['data']['comment']}")
+
+asyncio.run(listen())
+```
+
+```bash cURL / wscat
+npx wscat -c "wss://api.tik.tools?uniqueId=streamer&apiKey=YOUR_KEY"
+```
+
+```go Go
+conn, _, _ := websocket.DefaultDialer.Dial("wss://api.tik.tools?uniqueId=streamer&apiKey=YOUR_KEY", nil)
+defer conn.Close()
+for {
+    _, msg, _ := conn.ReadMessage()
+    fmt.Println(string(msg))
+}
+```
+
+```csharp C#
+var ws = new ClientWebSocket();
+await ws.ConnectAsync(new Uri("wss://api.tik.tools?uniqueId=streamer&apiKey=YOUR_KEY"), CancellationToken.None);
+```
+
+```java Java
+var ws = new WebSocketClient(new URI("wss://api.tik.tools?uniqueId=streamer&apiKey=YOUR_KEY")) {
+    public void onMessage(String msg) { System.out.println(msg); }
+    public void onOpen(ServerHandshake h) { System.out.println("Connected!"); }
+    public void onClose(int code, String reason, boolean remote) {}
+    public void onError(Exception e) { e.printStackTrace(); }
+};
+ws.connect();
+```
+</CodeGroup>
+
+## Why TikTool?
+
+<CardGroup cols={3}>
+  <Card title="30+ Real-Time Events" icon="bolt">
+    Chat, gifts, likes, follows, battles, viewer counts, room pins, shares — all decoded from TikTok's protobuf protocol.
+  </Card>
+  <Card title="6 Languages" icon="code">
+    Node.js, Python, Go, Java, C#, Rust — code examples for every endpoint and event.
+  </Card>
+  <Card title="Free Sandbox" icon="gift">
+    50 requests/day, 1 WebSocket connection. No credit card. Upgrade when you need more.
+  </Card>
+  <Card title="Sub-50ms Latency" icon="gauge-high">
+    Events arrive in under 50 milliseconds. 99.9% uptime SLA on edge infrastructure.
+  </Card>
+  <Card title="AI Live Captions" icon="microphone">
+    The only TikTok Live caption API — auto language detection, translation to 50+ languages, speaker diarization.
+  </Card>
+  <Card title="Open Source SDK" icon="github">
+    MIT-licensed Node.js and Python SDKs. Full source on GitHub.
+  </Card>
+</CardGroup>
+
+## Pricing
+
+| Tier | Price | Daily Requests | WebSocket Connections | Duration |
+|------|-------|----------------|----------------------|----------|
+| **Sandbox** | Free | 50/day | 1 | 5 min |
+| **Basic** | $7/wk | 10,000/day | 5 | 30 min |
+| **Pro** | $15/wk | 75,000/day | 50 | Unlimited |
+| **Ultra** | $45/wk | 300,000/day | 500 | Unlimited |
+
+<Card title="Get your free API key" icon="arrow-right" href="https://tik.tools/dashboard">
+  Sign up at tik.tools and start building in 30 seconds.
 </Card>
 
-## Make it yours
+## Explore
 
-Design a docs site that looks great and empowers your users.
-
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
+<CardGroup cols={2}>
+  <Card title="WebSocket Events Reference" icon="list" href="/websocket/events">
+    All 30+ event types with JSON schemas and field descriptions.
   </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
+  <Card title="REST API Endpoints" icon="server" href="/rest-api/overview">
+    16 endpoints: signing, live checks, room data, rankings, gifts, and more.
   </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+  <Card title="Node.js SDK" icon="js" href="/sdks/nodejs">
+    npm install @tiktool/live — event-driven API with auto-reconnect.
   </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
+  <Card title="Python SDK" icon="python" href="/sdks/python">
+    pip install tiktok-live-api — decorator-based event handling.
   </Card>
-</Columns>
-
-## Create beautiful pages
-
-Everything you need to create world-class documentation.
-
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
+  <Card title="Unreal Engine Plugin" icon="gamepad" href="/integrations/unreal-engine">
+    Build viewer-controlled games with TikTok Live events in UE5.
   </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
+  <Card title="Authentication" icon="key" href="/authentication">
+    API keys for backend, JWT tokens for frontend. Never expose your key.
   </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
-
-## Need inspiration?
-
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+</CardGroup>
