@@ -22,11 +22,11 @@ Check your current API key's rate limit status, tier information, and remaining 
 ### Examples
 
 <CodeGroup>
-```javascript Node.js
+````javascript Node.js
 const res = await fetch('https://api.tik.tools/webcast/rate_limits?apiKey=YOUR_KEY');
 const { data } = await res.json();
-console.log(\
-```
+console.log(`${data.api.remaining}/${data.api.limit} requests remaining`);
+````
 
 ```python Python
 import requests

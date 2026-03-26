@@ -33,7 +33,7 @@ Get the real-time online audience roster for a live room, ranked by gift score (
 ### Examples
 
 <CodeGroup>
-```javascript Node.js
+````javascript Node.js
 const res = await fetch('https://api.tik.tools/webcast/live_analytics/user_interactions?room_id=7123456789&apiKey=YOUR_KEY', {
   headers: { 'x-cookie-header': 'sessionid=YOUR_TIKTOK_COOKIES' }
 });
@@ -41,8 +41,11 @@ const { signed_url, headers, anchor_id } = await res.json();
 
 // Fetch from your IP with your session
 const tikRes = await fetch(signed_url, {
-  headers: { ...headers, Cookie: \
-```
+  headers: { ...headers, Cookie: `sessionid=YOUR_SESSIONID; ${headers.Cookie || ''}` }
+});
+const { data } = await tikRes.json();
+data.ranks.forEach(r => console.log(`#${r.rank} ${r.user.nickname}: ${r.score} pts`));
+````
 
 ```python Python
 import requests
