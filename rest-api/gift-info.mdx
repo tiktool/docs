@@ -29,11 +29,11 @@ Get the complete list of gifts available in a live room, including gift names, d
 ### Examples
 
 <CodeGroup>
-```javascript Node.js
+````javascript Node.js
 const res = await fetch('https://api.tik.tools/webcast/gift_info?unique_id=username&apiKey=YOUR_KEY');
 const { data } = await res.json();
-data.gifts.forEach(g => console.log(\
-```
+data.gifts.forEach(g => console.log(`${g.name}: ${g.diamond_count} diamonds`));
+````
 
 ```python Python
 import requests

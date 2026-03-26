@@ -28,15 +28,15 @@ Check live status for multiple TikTok users in a single request. Returns the sam
 ### Examples
 
 <CodeGroup>
-```javascript Node.js
+````javascript Node.js
 const res = await fetch('https://api.tik.tools/webcast/bulk_live_check?apiKey=YOUR_KEY', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ unique_ids: ['user1', 'user2', 'user3'] })
 });
 const { data } = await res.json();
-Object.entries(data).forEach(([user, live]) => console.log(\
-```
+Object.entries(data).forEach(([user, live]) => console.log(`${user}: ${live}`));
+````
 
 ```python Python
 import requests
@@ -65,9 +65,16 @@ HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString()
 System.out.println(res.body());
 ```
 
-```go Go
-payload := bytes.NewBufferString(\
-```
+````go Go
+payload := bytes.NewBufferString(`{"unique_ids":["user1","user2","user3"]}`)
+resp, err := http.Post(
+    "https://api.tik.tools/webcast/bulk_live_check?apiKey=YOUR_KEY",
+    "application/json", payload)
+if err != nil { log.Fatal(err) }
+defer resp.Body.Close()
+body, _ := io.ReadAll(resp.Body)
+fmt.Println(string(body))
+````
 
 ```csharp C#
 using var client = new HttpClient();

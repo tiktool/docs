@@ -29,13 +29,13 @@ List historical live stream recordings for a TikTok account. Returns past stream
 ### Examples
 
 <CodeGroup>
-```javascript Node.js
+````javascript Node.js
 const res = await fetch('https://api.tik.tools/webcast/live_analytics/video_list?unique_id=creator&apiKey=YOUR_KEY', {
   headers: { 'x-cookie-header': 'sessionid=YOUR_TIKTOK_COOKIES' }
 });
 const { data } = await res.json();
-data.forEach(v => console.log(\
-```
+data.forEach(v => console.log(`${v.title}: ${v.viewer_count} viewers`));
+````
 
 ```python Python
 import requests

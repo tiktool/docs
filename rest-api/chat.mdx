@@ -70,9 +70,18 @@ HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString()
 System.out.println(res.body());
 ```
 
-```go Go
-payload := bytes.NewBufferString(\
-```
+````go Go
+payload := bytes.NewBufferString(`{"room_id":"7123456789","text":"Hello!"}`)
+req, _ := http.NewRequest("POST",
+    "https://api.tik.tools/webcast/chat?apiKey=YOUR_KEY", payload)
+req.Header.Set("Content-Type", "application/json")
+req.Header.Set("x-cookie-header", "sessionid=YOUR_TIKTOK_COOKIES")
+resp, err := http.DefaultClient.Do(req)
+if err != nil { log.Fatal(err) }
+defer resp.Body.Close()
+body, _ := io.ReadAll(resp.Body)
+fmt.Println(string(body))
+````
 
 ```csharp C#
 using var client = new HttpClient();
