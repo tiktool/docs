@@ -1,41 +1,74 @@
-﻿---
+---
 title: "Gift Info"
-description: "Get the complete gift catalog with names, IDs, and diamond values."
+description: "Get the complete list of gifts available in a live room, including gift names, diamond costs, animated thumbnails, and gift types. Uses the 'sign-and-return' pattern."
 ---
 
 ## `GET` `/webcast/gift_info`
 
-Get the complete gift catalog with names, IDs, and diamond values.
+Get the complete list of gifts available in a live room, including gift names, diamond costs, animated thumbnails, and gift types. Uses the "sign-and-return" pattern.
 
-### Authentication
+**Response data:** Each gift entry includes `id`, `name`, `diamond_count` (cost in diamonds), `icon` (thumbnail URL), `type` (1=standard, 2=animated, etc.), and combo/repeat information.
 
-Pass your API key as a query parameter:
+**Use cases:** Build gift catalogs for your application, calculate the real-money value of gifts (1 diamond ≈ $0.005 USD), display gift icons in chat overlays, or track which gifts are available in different regions.
 
+**Note:** Gift availability varies by region and room. Some gifts are event-exclusive or require specific room configurations. The response returns all currently available gifts for the specified room.
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `room_id` | string | No | TikTok room ID |
+| `unique_id` | string | No | TikTok username |
+
+### Response
+
+```json
+{ "status_code": 0, "data": { "room_id": "...", "gifts": [{ "id": 1, "name": "Rose", "diamond_count": 1 }, ...] } }
 ```
-/webcast/gift_info?apiKey=YOUR_API_KEY
-```
 
-### Example
+### Examples
 
 <CodeGroup>
 ```javascript Node.js
-const res = await fetch('https://api.tik.tools/webcast/gift_info?apiKey=YOUR_KEY');
-const data = await res.json();
-console.log(data);
+const res = await fetch('https://api.tik.tools/webcast/gift_info?unique_id=username&apiKey=YOUR_KEY');
+const { data } = await res.json();
+data.gifts.forEach(g => console.log(\
 ```
 
 ```python Python
 import requests
 res = requests.get('https://api.tik.tools/webcast/gift_info',
-    params={'apiKey': 'YOUR_KEY'})
-print(res.json())
+    params={'unique_id': 'username', 'apiKey': 'YOUR_KEY'})
+for gift in res.json()['data']['gifts']:
+    print(f"{gift['name']}: {gift['diamond_count']} diamonds")
 ```
 
 ```bash cURL
-curl \"https://api.tik.tools/webcast/gift_info?apiKey=YOUR_KEY\"
+curl "https://api.tik.tools/webcast/gift_info?unique_id=username&apiKey=YOUR_KEY"
 ```
-</CodeGroup>
 
-<Note>
-See the [REST API Overview](/rest-api/overview) for response format and error handling.
-</Note>
+```java Java
+HttpClient client = HttpClient.newHttpClient();
+HttpRequest req = HttpRequest.newBuilder()
+    .uri(URI.create("https://api.tik.tools/webcast/gift_info?unique_id=username&apiKey=YOUR_KEY"))
+    .GET().build();
+HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
+System.out.println(res.body());
+```
+
+```go Go
+resp, err := http.Get("https://api.tik.tools/webcast/gift_info?unique_id=username&apiKey=YOUR_KEY")
+if err != nil { log.Fatal(err) }
+defer resp.Body.Close()
+body, _ := io.ReadAll(resp.Body)
+fmt.Println(string(body))
+```
+
+```csharp C#
+using var client = new HttpClient();
+var res = await client.GetStringAsync(
+    "https://api.tik.tools/webcast/gift_info?unique_id=username&apiKey=YOUR_KEY");
+Console.WriteLine(res);
+```
+
+</CodeGroup>

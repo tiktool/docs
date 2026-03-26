@@ -1,0 +1,82 @@
+---
+title: "video-detail"
+description: "Get granular analytics for a specific past live stream session. Returns detailed performance metrics including total views, peak concurrent viewers, gifts received, new followers gained, and engagemen"
+---
+
+## `GET` `/webcast/live_analytics/video_detail`
+
+Get granular analytics for a specific past live stream session. Returns detailed performance metrics including total views, peak concurrent viewers, gifts received, new followers gained, and engagement rates. Requires authenticated TikTok session cookies.
+
+**Authentication required:** Include session cookies via `x-cookie-header`. Access is restricted to the account's own streams.
+
+**Response data:** Includes `views` (total), `duration` (seconds), `peak_viewers`, `gifts` (total diamond value), `new_followers`, `likes`, `comments`, and period-specific breakdowns. The `video_id` comes from the `video_list` endpoint.
+
+**Use cases:** Post-stream analytics reports, A/B testing different stream formats, tracking creator growth metrics, or building agency reporting dashboards that aggregate performance across multiple creators.
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `video_id` | string | Yes | Video/stream ID |
+
+### Response
+
+```json
+{ "status_code": 0, "data": { "video_id": "...", "duration": 3600, "views": 12000, "gifts": 350, "peak_viewers": 800 } }
+```
+
+### Examples
+
+<CodeGroup>
+```javascript Node.js
+const res = await fetch('https://api.tik.tools/webcast/live_analytics/video_detail?video_id=VID123&apiKey=YOUR_KEY', {
+  headers: { 'x-cookie-header': 'sessionid=YOUR_TIKTOK_COOKIES' }
+});
+const { data } = await res.json();
+console.log(\
+```
+
+```python Python
+import requests
+res = requests.get('https://api.tik.tools/webcast/live_analytics/video_detail',
+    params={'video_id': 'VID123', 'apiKey': 'YOUR_KEY'},
+    headers={'x-cookie-header': 'sessionid=YOUR_TIKTOK_COOKIES'})
+d = res.json()['data']
+print(f"Duration: {d['duration']}s, Peak: {d['peak_viewers']}")
+```
+
+```bash cURL
+curl "https://api.tik.tools/webcast/live_analytics/video_detail?video_id=VID123&apiKey=YOUR_KEY" \
+  -H "x-cookie-header: sessionid=YOUR_TIKTOK_COOKIES"
+```
+
+```java Java
+HttpClient client = HttpClient.newHttpClient();
+HttpRequest req = HttpRequest.newBuilder()
+    .uri(URI.create("https://api.tik.tools/webcast/live_analytics/video_detail?video_id=VID123&apiKey=YOUR_KEY"))
+    .header("x-cookie-header", "sessionid=YOUR_TIKTOK_COOKIES")
+    .GET().build();
+HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
+System.out.println(res.body());
+```
+
+```go Go
+req, _ := http.NewRequest("GET",
+    "https://api.tik.tools/webcast/live_analytics/video_detail?video_id=VID123&apiKey=YOUR_KEY", nil)
+req.Header.Set("x-cookie-header", "sessionid=YOUR_TIKTOK_COOKIES")
+resp, err := http.DefaultClient.Do(req)
+if err != nil { log.Fatal(err) }
+defer resp.Body.Close()
+body, _ := io.ReadAll(resp.Body)
+fmt.Println(string(body))
+```
+
+```csharp C#
+using var client = new HttpClient();
+client.DefaultRequestHeaders.Add("x-cookie-header", "sessionid=YOUR_TIKTOK_COOKIES");
+var res = await client.GetStringAsync(
+    "https://api.tik.tools/webcast/live_analytics/video_detail?video_id=VID123&apiKey=YOUR_KEY");
+Console.WriteLine(res);
+```
+
+</CodeGroup>

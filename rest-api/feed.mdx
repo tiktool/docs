@@ -1,0 +1,178 @@
+---
+title: "Live Feed"
+description: "Discover currently live TikTok LIVE streams. Uses a two-step 'sign-and-return' pattern — the API returns a signed URL with headers and cookies that you fetch from YOUR own IP to get the actual TikTok "
+---
+
+## `GET` `/webcast/feed`
+
+Discover currently live TikTok LIVE streams. Uses a two-step "sign-and-return" pattern — the API returns a signed URL with headers and cookies that you fetch from YOUR own IP to get the actual TikTok feed data.
+
+**Authentication:** Include your TikTok `session_id` cookie for personalized, populated results. Without it, results are anonymous and limited (~5 rooms).
+
+**Channels:** `87` = Recommended — the main "For You" infinite scroll feed, `86` = Suggested — sidebar host recommendations (shown while watching), `89` or `1111006` = Gaming, `42` = Following (requires session).
+
+**Geo-targeting:** Feed results are determined by the **IP address** making the final TikTok fetch (Step 2), NOT by the region parameter. Since you fetch the signed URL from your own client, you'll see content relevant to your geographic location. The `region` param is passed to TikTok but has minimal effect on results.
+
+**Pagination:** The API automatically switches to TikTok's "load more" mode when you pass a `max_time` cursor. Fetch the signed URL → parse the TikTok JSON response → extract `data.extra.max_time` → pass it as `max_time` in your next call. Each page returns ~6-15 rooms; keep paginating for continuous discovery. The response also includes a `load_more_url` template — just replace `{MAX_TIME}` with the cursor.
+
+**Rate limits:** Pro: 100 calls/day. Ultra: 2,000 calls/day. Response includes `feed_remaining` and `feed_limit` fields.
+
+**Response data:** Each room includes `owner.display_id` (username), `owner.nickname` (display name), `title`, `user_count` (viewers), `owner.avatar_thumb` (profile photo), `id_str` (room ID), and more.
+
+<Note>
+This endpoint requires a **Basic** tier subscription or higher.
+</Note>
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `session_id` | string | No | Your TikTok sessionid cookie — strongly recommended. Get from browser DevTools → Application → Cookies → tiktok.com. Without it, results are sparse. |
+| `channel_id` | string | No | Feed channel: 87 = Recommended "For You" (default), 86 = Suggested sidebar, 89 or 1111006 = Gaming, 42 = Following |
+| `count` | number | No | Rooms per page (default: 20, max: 50) |
+| `max_time` | string | No | Pagination cursor from previous TikTok response (data.extra.max_time). Omit or "0" for first page. |
+| `region` | string | No | Hint passed to TikTok (default: US). Note: actual results are geo-targeted by the IP making the final fetch, not this param. |
+| `ttwid` | string | No | TikTok ttwid visitor cookie. Server provides one if omitted. |
+| `ms_token` | string | No | TikTok msToken cookie (optional, a placeholder is used if omitted). |
+
+### Response
+
+```json
+{
+  "status_code": 0,
+  "signed_url": "https://webcast.tiktok.com/webcast/feed/?...",
+  "method": "GET",
+  "headers": { "User-Agent": "...", "Referer": "https://www.tiktok.com/", ... },
+  "cookies": "ttwid=...; sessionid=...; sessionid_ss=...",
+  "region": "US",
+  "channel_id": "87",
+  "feed_remaining": 99,
+  "feed_limit": 100,
+  "note": "Fetch signed_url from your client/IP with these headers and cookies."
+}
+
+// After fetching signed_url, TikTok returns:
+{
+  "status_code": 0,
+  "data": [{
+    "data": {
+      "id_str": "7123456789",
+      "title": "🔴 Live Now!",
+      "user_count": 1250,
+      "owner": {
+        "display_id": "streamer_name",
+        "nickname": "Display Name",
+        "avatar_thumb": { "url_list": ["https://..."] }
+      }
+    }
+  }, ...],
+  "extra": { "max_time": "1773128824428" }
+}
+```
+
+### Examples
+
+<CodeGroup>
+```javascript Node.js
+// Step 1: Get signed URL with session for populated results
+const res = await fetch(
+  'https://api.tik.tools/webcast/feed?' + new URLSearchParams({
+    apiKey: 'YOUR_KEY',
+    session_id: 'YOUR_TIKTOK_SESSION_ID',  // from browser cookies
+    region: 'US',
+    channel_id: '87',  // 87=recommended, 86=suggested, 1111006=gaming
+    count: '20',
+  })
+);
+const { signed_url, headers, cookies, feed_remaining, feed_limit } = await res.json();
+console.log(\
+```
+
+```python Python
+import requests
+
+# Step 1: Get signed URL (with session for best results)
+res = requests.get('https://api.tik.tools/webcast/feed', params={
+    'apiKey': 'YOUR_KEY',
+    'session_id': 'YOUR_TIKTOK_SESSION_ID',
+    'region': 'US',
+    'channel_id': '87',
+    'count': 20,
+})
+info = res.json()
+print(f"Quota: {info['feed_remaining']}/{info['feed_limit']}")
+
+# Step 2: Fetch from your IP with cookies
+headers = {**info['headers'], 'Cookie': info.get('cookies', '')}
+tik_res = requests.get(info['signed_url'], headers=headers)
+
+# Step 3: Parse rooms (JSON response with session_id)
+feed = tik_res.json()
+for entry in feed.get('data', []):
+    room = entry['data']
+    owner = room['owner']
+    print(f"🔴 @{owner['display_id']}: \"{room['title']}\" — {room['user_count']} viewers")
+
+# Step 4: Pagination
+cursor = feed.get('extra', {}).get('max_time')
+if cursor:
+    next_page = requests.get('https://api.tik.tools/webcast/feed', params={
+        'apiKey': 'YOUR_KEY', 'session_id': 'YOUR_SESSION_ID',
+        'region': 'US', 'max_time': cursor,
+    })
+    # ... repeat steps 2-3
+```
+
+```bash cURL
+# Step 1: Get signed URL (add session_id for better results)
+curl "https://api.tik.tools/webcast/feed?apiKey=YOUR_KEY&region=US&channel_id=87&count=10&session_id=YOUR_SESSION"
+
+# Step 2: Use the returned signed_url, headers, and cookies to fetch from your IP:
+# curl "<signed_url>" -H "User-Agent: <ua>" -H "Cookie: <cookies>"
+
+# Step 3: For pagination, pass max_time from TikTok response:
+# curl "https://api.tik.tools/webcast/feed?apiKey=YOUR_KEY&region=US&max_time=1773128824428"
+```
+
+```java Java
+HttpClient client = HttpClient.newHttpClient();
+
+// Step 1: Get signed URL
+HttpRequest req = HttpRequest.newBuilder()
+    .uri(URI.create("https://api.tik.tools/webcast/feed?apiKey=YOUR_KEY&region=US&session_id=YOUR_SESSION&count=20"))
+    .GET().build();
+HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
+// Parse JSON: signed_url, headers, cookies
+
+// Step 2: Fetch signed_url from your IP with returned headers + cookies
+// Step 3: Parse room data from TikTok response
+// Step 4: Use extra.max_time for pagination
+```
+
+```go Go
+// Step 1: Get signed URL
+resp, err := http.Get("https://api.tik.tools/webcast/feed?apiKey=YOUR_KEY&region=US&session_id=YOUR_SESSION&count=20")
+if err != nil { log.Fatal(err) }
+defer resp.Body.Close()
+body, _ := io.ReadAll(resp.Body)
+
+// Parse JSON → signed_url, headers, cookies
+// Step 2: Fetch signed_url with cookies from your IP
+// Step 3: Parse rooms from TikTok JSON response
+// Step 4: Use extra.max_time for pagination
+```
+
+```csharp C#
+using var client = new HttpClient();
+
+// Step 1: Get signed URL
+var json = await client.GetStringAsync(
+    "https://api.tik.tools/webcast/feed?apiKey=YOUR_KEY&region=US&session_id=YOUR_SESSION&count=20");
+// Parse: signed_url, headers, cookies from JSON
+
+// Step 2: Fetch signed_url with returned headers + cookies
+// Step 3: Parse rooms from TikTok response
+// Step 4: Use extra.max_time for pagination
+```
+
+</CodeGroup>

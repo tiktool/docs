@@ -1,48 +1,83 @@
-﻿---
+---
 title: "Sign WebSocket"
-description: "Sign a TikTok WebSocket URL with X-Bogus parameters."
+description: "Sign a TikTok WebSocket URL with X-Bogus parameters for direct connection to TikTok's webcast-ws servers. This is the WebSocket-specific equivalent of sign_url."
 ---
 
 ## `POST` `/webcast/sign_websocket`
 
-Sign a TikTok WebSocket URL with X-Bogus parameters.
+Sign a TikTok WebSocket URL with X-Bogus parameters for direct connection to TikTok's `webcast-ws` servers. This is the WebSocket-specific equivalent of `sign_url`.
 
-### Authentication
+**How it works:** Provide a `room_id` and the API generates a fully signed WebSocket URL targeting the correct regional TikTok WebSocket server (`webcast-ws.tiktok.com`, `webcast-ws.us.tiktok.com`, etc.).
 
-Pass your API key as a query parameter:
+**Response:** Returns `signed_url` (the complete `wss://` URL), `cookies`, and `user_agent`. Connect using these credentials with the provided cookies in the WebSocket handshake headers.
 
+**Use case:** Building custom WebSocket clients in languages without our SDK, or when you need fine-grained control over the WebSocket lifecycle. The SDK handles this internally — most users won't need this endpoint directly.
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `room_id` | string | Yes | TikTok room ID |
+| `cursor` | string | No | Pagination cursor |
+
+### Response
+
+```json
+{ "status_code": 0, "data": { "signed_url": "wss://...", "x_bogus": "...", "x_gnarly": "...", "user_agent": "...", "cookies": "..." } }
 ```
-/webcast/sign_websocket?apiKey=YOUR_API_KEY
-```
 
-### Example
+### Examples
 
 <CodeGroup>
 ```javascript Node.js
 const res = await fetch('https://api.tik.tools/webcast/sign_websocket?apiKey=YOUR_KEY', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ unique_id: 'username' })
+  body: JSON.stringify({ room_id: '7123456789' })
 });
-const data = await res.json();
-console.log(data);
+const { data } = await res.json();
+// Connect with: new WebSocket(data.signed_url)
 ```
 
 ```python Python
 import requests
 res = requests.post('https://api.tik.tools/webcast/sign_websocket',
     params={'apiKey': 'YOUR_KEY'},
-    json={'unique_id': 'username'})
-print(res.json())
+    json={'room_id': '7123456789'})
+data = res.json()['data']
+# Connect with websockets.connect(data['signed_url'])
 ```
 
 ```bash cURL
-curl -X POST \"https://api.tik.tools/webcast/sign_websocket?apiKey=YOUR_KEY\" \
+curl -X POST "https://api.tik.tools/webcast/sign_websocket?apiKey=YOUR_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"unique_id": "username"}'
+  -d '{"room_id": "7123456789"}'
 ```
-</CodeGroup>
 
-<Note>
-See the [REST API Overview](/rest-api/overview) for response format and error handling.
-</Note>
+```java Java
+HttpClient client = HttpClient.newHttpClient();
+String json = "{\"room_id\": \"7123456789\"}";
+HttpRequest req = HttpRequest.newBuilder()
+    .uri(URI.create("https://api.tik.tools/webcast/sign_websocket?apiKey=YOUR_KEY"))
+    .header("Content-Type", "application/json")
+    .POST(HttpRequest.BodyPublishers.ofString(json))
+    .build();
+HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
+System.out.println(res.body());
+```
+
+```go Go
+payload := bytes.NewBufferString(\
+```
+
+```csharp C#
+using var client = new HttpClient();
+var json = new StringContent(
+    @"{""room_id"":""7123456789""}",
+    Encoding.UTF8, "application/json");
+var res = await client.PostAsync(
+    "https://api.tik.tools/webcast/sign_websocket?apiKey=YOUR_KEY", json);
+Console.WriteLine(await res.Content.ReadAsStringAsync());
+```
+
+</CodeGroup>

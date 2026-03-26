@@ -1,21 +1,32 @@
-﻿---
+---
 title: "Room Video"
-description: "Get live stream video playback URLs (HLS, FLV)."
+description: "Get live stream video playback URLs in multiple formats and quality levels. Returns HLS (.m3u8), FLV, and direct origin URLs suitable for embedding or processing."
 ---
 
 ## `POST` `/webcast/room_video`
 
-Get live stream video playback URLs (HLS, FLV).
+Get live stream video playback URLs in multiple formats and quality levels. Returns HLS (`.m3u8`), FLV, and direct origin URLs suitable for embedding or processing.
 
-### Authentication
+**Stream formats:** `hls_pull_url` for adaptive bitrate (best for web players), `flv_pull_url` for low-latency playback, and `origin` URLs for the highest quality source stream. Multiple resolutions are available (SD, HD, FULL_HD).
 
-Pass your API key as a query parameter:
+**Use cases:** Building custom live stream players, recording/archiving streams, feeding audio to transcription services (used internally by our Live Captions feature), or creating multi-stream monitoring walls.
 
+**Important:** Stream URLs are time-limited and will expire. Re-fetch periodically if you need to maintain long-running playback. The `hls` format provides the most reliable playback across browsers and devices.
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `unique_id` | string | No | TikTok username |
+| `room_id` | string | No | Room ID |
+
+### Response
+
+```json
+{ "status_code": 0, "data": { "room_id": "...", "alive": true, "stream_urls": { "origin": { "hls": "...", "flv": "..." }, "sd": {...} }, "default_quality": "origin" } }
 ```
-/webcast/room_video?apiKey=YOUR_API_KEY
-```
 
-### Example
+### Examples
 
 <CodeGroup>
 ```javascript Node.js
@@ -24,8 +35,8 @@ const res = await fetch('https://api.tik.tools/webcast/room_video?apiKey=YOUR_KE
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ unique_id: 'username' })
 });
-const data = await res.json();
-console.log(data);
+const { data } = await res.json();
+const hlsUrl = data.stream_urls?.origin?.hls;
 ```
 
 ```python Python
@@ -33,16 +44,39 @@ import requests
 res = requests.post('https://api.tik.tools/webcast/room_video',
     params={'apiKey': 'YOUR_KEY'},
     json={'unique_id': 'username'})
-print(res.json())
+hls = res.json()['data']['stream_urls']['origin']['hls']
 ```
 
 ```bash cURL
-curl -X POST \"https://api.tik.tools/webcast/room_video?apiKey=YOUR_KEY\" \
+curl -X POST "https://api.tik.tools/webcast/room_video?apiKey=YOUR_KEY" \
   -H "Content-Type: application/json" \
   -d '{"unique_id": "username"}'
 ```
-</CodeGroup>
 
-<Note>
-See the [REST API Overview](/rest-api/overview) for response format and error handling.
-</Note>
+```java Java
+HttpClient client = HttpClient.newHttpClient();
+String json = "{\"unique_id\": \"username\"}";
+HttpRequest req = HttpRequest.newBuilder()
+    .uri(URI.create("https://api.tik.tools/webcast/room_video?apiKey=YOUR_KEY"))
+    .header("Content-Type", "application/json")
+    .POST(HttpRequest.BodyPublishers.ofString(json))
+    .build();
+HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
+System.out.println(res.body());
+```
+
+```go Go
+payload := bytes.NewBufferString(\
+```
+
+```csharp C#
+using var client = new HttpClient();
+var json = new StringContent(
+    @"{""unique_id"":""username""}",
+    Encoding.UTF8, "application/json");
+var res = await client.PostAsync(
+    "https://api.tik.tools/webcast/room_video?apiKey=YOUR_KEY", json);
+Console.WriteLine(await res.Content.ReadAsStringAsync());
+```
+
+</CodeGroup>

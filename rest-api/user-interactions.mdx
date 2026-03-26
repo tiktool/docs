@@ -1,0 +1,95 @@
+---
+title: "user-interactions"
+description: "Get the real-time online audience roster for a live room, ranked by gift score (diamonds sent during this session). Returns each viewer's rank, score, and full profile. Requires authenticated TikTok s"
+---
+
+## `GET` `/webcast/live_analytics/user_interactions`
+
+Get the real-time online audience roster for a live room, ranked by gift score (diamonds sent during this session). Returns each viewer's rank, score, and full profile. Requires authenticated TikTok session cookies.
+
+**How it works:** Uses the "sign-and-return" pattern. The API returns a `signed_url` that you fetch with your session cookies to get TikTok's audience data. The `anchor_id` (host's user ID) is auto-resolved from the `room_id`.
+
+**Response data:** Each entry includes `rank` (1-based position), `score` (diamonds sent this session), and `user` profile with `nickname`, `display_id`, `id_str`, `avatar_thumb`, and `follow_info` (follower/following counts).
+
+**Use cases:** Identifying top supporters in real-time, building live leaderboard overlays, tracking viewer engagement and spending patterns, or providing viewer analytics for agency clients.
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `room_id` | string | Yes | Room ID of the stream |
+| `user_id` | string | No | Filter to specific user ID |
+| `count` | number | No | Number of results (default: 50) |
+
+### Response
+
+```json
+{ "status_code": 0, "signed_url": "https://...", "anchor_id": "...", "note": "Fetch signed_url with your session cookies" }
+
+// After fetching signed_url with session cookies, TikTok returns:
+{ "data": { "ranks": [{ "rank": 1, "score": 192, "user": { "nickname": "...", "display_id": "...", "id_str": "..." } }], "total": 49 } }
+```
+
+### Examples
+
+<CodeGroup>
+```javascript Node.js
+const res = await fetch('https://api.tik.tools/webcast/live_analytics/user_interactions?room_id=7123456789&apiKey=YOUR_KEY', {
+  headers: { 'x-cookie-header': 'sessionid=YOUR_TIKTOK_COOKIES' }
+});
+const { signed_url, headers, anchor_id } = await res.json();
+
+// Fetch from your IP with your session
+const tikRes = await fetch(signed_url, {
+  headers: { ...headers, Cookie: \
+```
+
+```python Python
+import requests
+res = requests.get('https://api.tik.tools/webcast/live_analytics/user_interactions',
+    params={'room_id': '7123456789', 'apiKey': 'YOUR_KEY'},
+    headers={'x-cookie-header': 'sessionid=YOUR_TIKTOK_COOKIES'})
+info = res.json()
+
+# Fetch signed URL with your session
+tik = requests.get(info['signed_url'],
+    headers={**info['headers'], 'Cookie': f"sessionid=YOUR_SESSIONID"})
+for r in tik.json()['data']['ranks']:
+    print(f"#{r['rank']} {r['user']['nickname']}: {r['score']} pts")
+```
+
+```bash cURL
+curl "https://api.tik.tools/webcast/live_analytics/user_interactions?room_id=7123456789&apiKey=YOUR_KEY" \
+  -H "x-cookie-header: sessionid=YOUR_TIKTOK_COOKIES"
+```
+
+```java Java
+HttpClient client = HttpClient.newHttpClient();
+HttpRequest req = HttpRequest.newBuilder()
+    .uri(URI.create("https://api.tik.tools/webcast/live_analytics/user_interactions?room_id=7123456789&apiKey=YOUR_KEY"))
+    .header("x-cookie-header", "sessionid=YOUR_TIKTOK_COOKIES")
+    .GET().build();
+HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
+System.out.println(res.body());
+```
+
+```go Go
+req, _ := http.NewRequest("GET",
+    "https://api.tik.tools/webcast/live_analytics/user_interactions?room_id=7123456789&apiKey=YOUR_KEY", nil)
+req.Header.Set("x-cookie-header", "sessionid=YOUR_TIKTOK_COOKIES")
+resp, err := http.DefaultClient.Do(req)
+if err != nil { log.Fatal(err) }
+defer resp.Body.Close()
+body, _ := io.ReadAll(resp.Body)
+fmt.Println(string(body))
+```
+
+```csharp C#
+using var client = new HttpClient();
+client.DefaultRequestHeaders.Add("x-cookie-header", "sessionid=YOUR_TIKTOK_COOKIES");
+var res = await client.GetStringAsync(
+    "https://api.tik.tools/webcast/live_analytics/user_interactions?room_id=7123456789&apiKey=YOUR_KEY");
+Console.WriteLine(res);
+```
+
+</CodeGroup>

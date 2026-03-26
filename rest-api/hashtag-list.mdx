@@ -1,41 +1,73 @@
-﻿---
+---
 title: "Hashtag List"
-description: "Get currently trending live stream hashtags from TikTok."
+description: "Get currently trending live stream hashtags from TikTok. Returns hashtag names, live viewer counts, and associated metadata."
 ---
 
 ## `GET` `/webcast/hashtag_list`
 
-Get currently trending live stream hashtags from TikTok.
+Get currently trending live stream hashtags from TikTok. Returns hashtag names, live viewer counts, and associated metadata.
 
-### Authentication
+**Response data:** Each hashtag includes `id`, `title` (the hashtag text), `user_count` (total viewers across all streams using this hashtag), and related metadata. Results are sorted by popularity.
 
-Pass your API key as a query parameter:
+**Use cases:** Discover trending topics for content strategy, build hashtag explorers, analyze live streaming trends over time, or filter the feed by popular hashtags.
 
+**Pagination:** Use the `count` parameter to control results per page (default: 20, max: 50). The endpoint uses TikTok's internal trending algorithm, so results update frequently as trending topics shift.
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `count` | number | No | Number of results (default: 20, max: 50) |
+
+### Response
+
+```json
+{ "status_code": 0, "data": [{ "id": "...", "title": "#gaming", "user_count": 15000 }, ...] }
 ```
-/webcast/hashtag_list?apiKey=YOUR_API_KEY
-```
 
-### Example
+### Examples
 
 <CodeGroup>
 ```javascript Node.js
-const res = await fetch('https://api.tik.tools/webcast/hashtag_list?apiKey=YOUR_KEY');
-const data = await res.json();
-console.log(data);
+const res = await fetch('https://api.tik.tools/webcast/hashtag_list?count=10&apiKey=YOUR_KEY');
+const { data } = await res.json();
+data.forEach(tag => console.log(tag.title));
 ```
 
 ```python Python
 import requests
 res = requests.get('https://api.tik.tools/webcast/hashtag_list',
-    params={'apiKey': 'YOUR_KEY'})
-print(res.json())
+    params={'count': 10, 'apiKey': 'YOUR_KEY'})
+for tag in res.json()['data']:
+    print(tag['title'])
 ```
 
 ```bash cURL
-curl \"https://api.tik.tools/webcast/hashtag_list?apiKey=YOUR_KEY\"
+curl "https://api.tik.tools/webcast/hashtag_list?count=10&apiKey=YOUR_KEY"
 ```
-</CodeGroup>
 
-<Note>
-See the [REST API Overview](/rest-api/overview) for response format and error handling.
-</Note>
+```java Java
+HttpClient client = HttpClient.newHttpClient();
+HttpRequest req = HttpRequest.newBuilder()
+    .uri(URI.create("https://api.tik.tools/webcast/hashtag_list?count=10&apiKey=YOUR_KEY"))
+    .GET().build();
+HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
+System.out.println(res.body());
+```
+
+```go Go
+resp, err := http.Get("https://api.tik.tools/webcast/hashtag_list?count=10&apiKey=YOUR_KEY")
+if err != nil { log.Fatal(err) }
+defer resp.Body.Close()
+body, _ := io.ReadAll(resp.Body)
+fmt.Println(string(body))
+```
+
+```csharp C#
+using var client = new HttpClient();
+var res = await client.GetStringAsync(
+    "https://api.tik.tools/webcast/hashtag_list?count=10&apiKey=YOUR_KEY");
+Console.WriteLine(res);
+```
+
+</CodeGroup>

@@ -1,41 +1,73 @@
-﻿---
+---
 title: "Check Alive"
-description: "Check if one or more TikTok users are currently live streaming."
+description: "Check if one or more TikTok users are currently live streaming. Returns live status, room ID, stream title, and viewer count for each user."
 ---
 
 ## `GET` `/webcast/check_alive`
 
-Check if one or more TikTok users are currently live streaming.
+Check if one or more TikTok users are currently live streaming. Returns live status, room ID, stream title, and viewer count for each user.
 
-### Authentication
+**Lookup methods:** Pass `unique_id` (username) for single-user lookups, or `room_ids` (comma-separated) to check multiple rooms at once. At least one parameter is required.
 
-Pass your API key as a query parameter:
+**Response data:** Each entry includes `room_id`, `alive` (boolean), `title`, and `userCount`. Use this to build monitoring dashboards, trigger alerts when creators go live, or validate a stream before connecting via WebSocket.
 
+**Performance:** This endpoint is lightweight and cached — ideal for polling. Combine with `bulk_live_check` for monitoring large lists of creators.
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `room_ids` | string | No | Comma-separated room IDs |
+| `unique_id` | string | No | TikTok username (without @) |
+
+### Response
+
+```json
+{ "status_code": 0, "data": [{ "room_id": "...", "alive": true, "title": "...", "userCount": 1234 }] }
 ```
-/webcast/check_alive?apiKey=YOUR_API_KEY
-```
 
-### Example
+### Examples
 
 <CodeGroup>
 ```javascript Node.js
-const res = await fetch('https://api.tik.tools/webcast/check_alive?apiKey=YOUR_KEY');
-const data = await res.json();
-console.log(data);
+const res = await fetch('https://api.tik.tools/webcast/check_alive?apiKey=YOUR_KEY&unique_id=username');
+const { data } = await res.json();
+console.log(data[0].alive ? 'Live!' : 'Offline');
 ```
 
 ```python Python
 import requests
 res = requests.get('https://api.tik.tools/webcast/check_alive',
-    params={'apiKey': 'YOUR_KEY'})
-print(res.json())
+    params={'apiKey': 'YOUR_KEY', 'unique_id': 'username'})
+print('Live!' if res.json()['data'][0]['alive'] else 'Offline')
 ```
 
 ```bash cURL
-curl \"https://api.tik.tools/webcast/check_alive?apiKey=YOUR_KEY\"
+curl "https://api.tik.tools/webcast/check_alive?apiKey=YOUR_KEY&unique_id=username"
 ```
-</CodeGroup>
 
-<Note>
-See the [REST API Overview](/rest-api/overview) for response format and error handling.
-</Note>
+```java Java
+HttpClient client = HttpClient.newHttpClient();
+HttpRequest req = HttpRequest.newBuilder()
+    .uri(URI.create("https://api.tik.tools/webcast/check_alive?apiKey=YOUR_KEY&unique_id=username"))
+    .GET().build();
+HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
+System.out.println(res.body());
+```
+
+```go Go
+resp, err := http.Get("https://api.tik.tools/webcast/check_alive?apiKey=YOUR_KEY&unique_id=username")
+if err != nil { log.Fatal(err) }
+defer resp.Body.Close()
+body, _ := io.ReadAll(resp.Body)
+fmt.Println(string(body))
+```
+
+```csharp C#
+using var client = new HttpClient();
+var res = await client.GetStringAsync(
+    "https://api.tik.tools/webcast/check_alive?apiKey=YOUR_KEY&unique_id=username");
+Console.WriteLine(res);
+```
+
+</CodeGroup>

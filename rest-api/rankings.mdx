@@ -1,41 +1,73 @@
-﻿---
+---
 title: "Rankings"
-description: "Get real-time leaderboard data — top gifters and engagement scores."
+description: "Get real-time leaderboard data for a live room — top gifters, online audience rankings, and engagement scores. Uses the 'sign-and-return' pattern for authenticated data."
 ---
 
 ## `GET` `/webcast/rankings`
 
-Get real-time leaderboard data — top gifters and engagement scores.
+Get real-time leaderboard data for a live room — top gifters, online audience rankings, and engagement scores. Uses the "sign-and-return" pattern for authenticated data.
 
-### Authentication
+**Data available:** In-room top gifters (`online_audience` — ranked by diamonds sent this session), all-time gifter leaderboard (`anchor_rank_list`), and entrance configuration (ranking tabs, timer info, class/league badges).
 
-Pass your API key as a query parameter:
+**Authentication:** For full leaderboard data, include your TikTok session cookies via `x-cookie-header`. Without authentication, the endpoint returns limited ranking data.
 
+**Response pattern:** Returns a `signed_url` that you fetch with session cookies to get TikTok's ranking data. Each rank entry includes `user` (nickname, avatar, follower count), `score` (diamonds), and `rank` position.
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `room_id` | string | No | TikTok room ID |
+| `unique_id` | string | No | TikTok username (alternative to room_id) |
+
+### Response
+
+```json
+{ "status_code": 0, "data": { "room_id": "...", "rankings": [...] } }
 ```
-/webcast/rankings?apiKey=YOUR_API_KEY
-```
 
-### Example
+### Examples
 
 <CodeGroup>
 ```javascript Node.js
-const res = await fetch('https://api.tik.tools/webcast/rankings?apiKey=YOUR_KEY');
-const data = await res.json();
-console.log(data);
+const res = await fetch('https://api.tik.tools/webcast/rankings?unique_id=username&apiKey=YOUR_KEY');
+const { data } = await res.json();
+console.log(data.rankings);
 ```
 
 ```python Python
 import requests
 res = requests.get('https://api.tik.tools/webcast/rankings',
-    params={'apiKey': 'YOUR_KEY'})
-print(res.json())
+    params={'unique_id': 'username', 'apiKey': 'YOUR_KEY'})
+print(res.json()['data']['rankings'])
 ```
 
 ```bash cURL
-curl \"https://api.tik.tools/webcast/rankings?apiKey=YOUR_KEY\"
+curl "https://api.tik.tools/webcast/rankings?unique_id=username&apiKey=YOUR_KEY"
 ```
-</CodeGroup>
 
-<Note>
-See the [REST API Overview](/rest-api/overview) for response format and error handling.
-</Note>
+```java Java
+HttpClient client = HttpClient.newHttpClient();
+HttpRequest req = HttpRequest.newBuilder()
+    .uri(URI.create("https://api.tik.tools/webcast/rankings?unique_id=username&apiKey=YOUR_KEY"))
+    .GET().build();
+HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
+System.out.println(res.body());
+```
+
+```go Go
+resp, err := http.Get("https://api.tik.tools/webcast/rankings?unique_id=username&apiKey=YOUR_KEY")
+if err != nil { log.Fatal(err) }
+defer resp.Body.Close()
+body, _ := io.ReadAll(resp.Body)
+fmt.Println(string(body))
+```
+
+```csharp C#
+using var client = new HttpClient();
+var res = await client.GetStringAsync(
+    "https://api.tik.tools/webcast/rankings?unique_id=username&apiKey=YOUR_KEY");
+Console.WriteLine(res);
+```
+
+</CodeGroup>
