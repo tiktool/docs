@@ -51,6 +51,12 @@
               "rest-api/sign-websocket",
               "rest-api/hashtag-list",
               "rest-api/gift-info",
+              "rest-api/chat",
+              "rest-api/user-earnings",
+              "rest-api/feed",
+              "rest-api/video-list",
+              "rest-api/video-detail",
+              "rest-api/user-interactions",
               "rest-api/rate-limits",
               "rest-api/jwt"
             ]

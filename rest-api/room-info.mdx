@@ -1,21 +1,32 @@
-﻿---
+---
 title: "Room Info"
-description: "Get comprehensive information about a live stream room."
+description: "Get comprehensive information about a live stream room including the host's profile, stream title, viewer count, start time, and stream configuration."
 ---
 
 ## `POST` `/webcast/room_info`
 
-Get comprehensive information about a live stream room.
+Get comprehensive information about a live stream room including the host's profile, stream title, viewer count, start time, and stream configuration.
 
-### Authentication
+**Response data:** Returns owner profile (`nickname`, `uniqueId`, `profilePictureUrl`, follower count), room metadata (`title`, `user_count`, `like_count`, `create_time`), stream URLs, cover images, and room status.
 
-Pass your API key as a query parameter:
+**Identification:** Provide either `unique_id` (username) or `room_id`. Returns an error if the user is not currently live.
 
+**Use cases:** Pre-flight checks before WebSocket connection, building stream info cards/embeds, monitoring dashboards, or extracting the room ID for use with other endpoints like `rankings` or `gift_info`.
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `unique_id` | string | No | TikTok username |
+| `room_id` | string | No | Room ID |
+
+### Response
+
+```json
+{ "status_code": 0, "data": { "room_id": "...", "alive": true, "title": "...", "user_count": 500, "owner": {...}, "like_count": 1234, "share_count": 56 } }
 ```
-/webcast/room_info?apiKey=YOUR_API_KEY
-```
 
-### Example
+### Examples
 
 <CodeGroup>
 ```javascript Node.js
@@ -24,8 +35,8 @@ const res = await fetch('https://api.tik.tools/webcast/room_info?apiKey=YOUR_KEY
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ unique_id: 'username' })
 });
-const data = await res.json();
-console.log(data);
+const { data } = await res.json();
+console.log(\
 ```
 
 ```python Python
@@ -33,16 +44,40 @@ import requests
 res = requests.post('https://api.tik.tools/webcast/room_info',
     params={'apiKey': 'YOUR_KEY'},
     json={'unique_id': 'username'})
-print(res.json())
+data = res.json()['data']
+print(f"{data['title']} - {data['user_count']} viewers")
 ```
 
 ```bash cURL
-curl -X POST \"https://api.tik.tools/webcast/room_info?apiKey=YOUR_KEY\" \
+curl -X POST "https://api.tik.tools/webcast/room_info?apiKey=YOUR_KEY" \
   -H "Content-Type: application/json" \
   -d '{"unique_id": "username"}'
 ```
-</CodeGroup>
 
-<Note>
-See the [REST API Overview](/rest-api/overview) for response format and error handling.
-</Note>
+```java Java
+HttpClient client = HttpClient.newHttpClient();
+String json = "{\"unique_id\": \"username\"}";
+HttpRequest req = HttpRequest.newBuilder()
+    .uri(URI.create("https://api.tik.tools/webcast/room_info?apiKey=YOUR_KEY"))
+    .header("Content-Type", "application/json")
+    .POST(HttpRequest.BodyPublishers.ofString(json))
+    .build();
+HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
+System.out.println(res.body());
+```
+
+```go Go
+payload := bytes.NewBufferString(\
+```
+
+```csharp C#
+using var client = new HttpClient();
+var json = new StringContent(
+    @"{""unique_id"":""username""}",
+    Encoding.UTF8, "application/json");
+var res = await client.PostAsync(
+    "https://api.tik.tools/webcast/room_info?apiKey=YOUR_KEY", json);
+Console.WriteLine(await res.Content.ReadAsStringAsync());
+```
+
+</CodeGroup>

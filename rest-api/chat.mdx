@@ -1,0 +1,88 @@
+---
+title: "Send Chat"
+description: "Send a chat message to an active TikTok live stream room on behalf of an authenticated user. Requires valid TikTok session cookies — the message is sent as the logged-in user."
+---
+
+## `POST` `/webcast/chat`
+
+Send a chat message to an active TikTok live stream room on behalf of an authenticated user. Requires valid TikTok session cookies — the message is sent as the logged-in user.
+
+**Authentication required:** You must include TikTok session cookies via the `x-cookie-header` header. Get your `sessionid` from browser DevTools → Application → Cookies → tiktok.com.
+
+**How it works:** The API signs the chat request with X-Bogus, attaches your session cookies, and sends the message to TikTok's chat endpoint. The message appears in the live room as if you typed it in the TikTok app.
+
+**Rate limiting:** TikTok enforces internal chat rate limits (~1 message per 2 seconds). Sending too fast may result in temporary chat mutes. The API returns `status_code: 0` on success.
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `room_id` | string | Yes | Target room ID |
+| `text` | string | Yes | Chat message text |
+
+### Response
+
+```json
+{ "status_code": 0, "data": { "status_code": 0 } }
+```
+
+### Examples
+
+<CodeGroup>
+```javascript Node.js
+const res = await fetch('https://api.tik.tools/webcast/chat?apiKey=YOUR_KEY', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'x-cookie-header': 'sessionid=YOUR_TIKTOK_COOKIES'
+  },
+  body: JSON.stringify({ room_id: '7123456789', text: 'Hello!' })
+});
+console.log(await res.json());
+```
+
+```python Python
+import requests
+res = requests.post('https://api.tik.tools/webcast/chat',
+    params={'apiKey': 'YOUR_KEY'},
+    headers={'x-cookie-header': 'sessionid=YOUR_TIKTOK_COOKIES'},
+    json={'room_id': '7123456789', 'text': 'Hello!'})
+print(res.json())
+```
+
+```bash cURL
+curl -X POST "https://api.tik.tools/webcast/chat?apiKey=YOUR_KEY" \
+  -H "Content-Type: application/json" \
+  -H "x-cookie-header: sessionid=YOUR_TIKTOK_COOKIES" \
+  -d '{"room_id": "7123456789", "text": "Hello!"}'
+```
+
+```java Java
+HttpClient client = HttpClient.newHttpClient();
+String json = "{\"room_id\": \"7123456789\", \"text\": \"Hello!\"}";
+HttpRequest req = HttpRequest.newBuilder()
+    .uri(URI.create("https://api.tik.tools/webcast/chat?apiKey=YOUR_KEY"))
+    .header("Content-Type", "application/json")
+    .header("x-cookie-header", "sessionid=YOUR_TIKTOK_COOKIES")
+    .POST(HttpRequest.BodyPublishers.ofString(json))
+    .build();
+HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
+System.out.println(res.body());
+```
+
+```go Go
+payload := bytes.NewBufferString(\
+```
+
+```csharp C#
+using var client = new HttpClient();
+client.DefaultRequestHeaders.Add("x-cookie-header", "sessionid=YOUR_TIKTOK_COOKIES");
+var json = new StringContent(
+    @"{""room_id"":""7123456789"",""text"":""Hello!""}",
+    Encoding.UTF8, "application/json");
+var res = await client.PostAsync(
+    "https://api.tik.tools/webcast/chat?apiKey=YOUR_KEY", json);
+Console.WriteLine(await res.Content.ReadAsStringAsync());
+```
+
+</CodeGroup>

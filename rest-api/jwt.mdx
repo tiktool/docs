@@ -1,48 +1,84 @@
-﻿---
+---
 title: "JWT Authentication"
-description: "Generate a JWT token for secure frontend WebSocket connections."
+description: "Generate a JWT (JSON Web Token) for secure frontend WebSocket connections. JWTs allow your client-side code to connect without exposing your API key."
 ---
 
 ## `POST` `/authentication/jwt`
 
-Generate a JWT token for secure frontend WebSocket connections.
+Generate a JWT (JSON Web Token) for secure frontend WebSocket connections. JWTs allow your client-side code to connect without exposing your API key.
 
-### Authentication
+**Security model:** Generate JWTs server-side using your API key, then pass the `jwtKey` to your frontend. The JWT can be scoped to specific creators (`allowed_creators`) and limited to a set number of concurrent connections.
 
-Pass your API key as a query parameter:
+**Expiry:** Tokens expire after `expire_after` seconds (default: 3600 = 1 hour). After expiry, the client must request a new token from your backend.
 
+**Use cases:** Web applications where the frontend connects directly to `wss://api.tik.tools?uniqueId=USERNAME&jwtKey=TOKEN`. This keeps your API key on the server while letting browsers connect to the WebSocket.
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `expire_after` | number | No | Seconds until expiry (default: 3600) |
+| `allowed_creators` | string[] | No | Restrict to specific creators |
+| `max_websockets` | number | No | Max concurrent WS connections (default: 1) |
+
+### Response
+
+```json
+{ "status_code": 0, "data": { "token": "eyJ..." } }
 ```
-/authentication/jwt?apiKey=YOUR_API_KEY
-```
 
-### Example
+### Examples
 
 <CodeGroup>
 ```javascript Node.js
 const res = await fetch('https://api.tik.tools/authentication/jwt?apiKey=YOUR_KEY', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ unique_id: 'username' })
+  body: JSON.stringify({ expire_after: 3600, allowed_creators: ['streamer1'] })
 });
-const data = await res.json();
-console.log(data);
+const { data } = await res.json();
+// Use data.token for WebSocket: wss://api.tik.tools?jwtKey=TOKEN
 ```
 
 ```python Python
 import requests
 res = requests.post('https://api.tik.tools/authentication/jwt',
     params={'apiKey': 'YOUR_KEY'},
-    json={'unique_id': 'username'})
-print(res.json())
+    json={'expire_after': 3600, 'allowed_creators': ['streamer1']})
+token = res.json()['data']['token']
+# Use token: wss://api.tik.tools?jwtKey=TOKEN
 ```
 
 ```bash cURL
-curl -X POST \"https://api.tik.tools/authentication/jwt?apiKey=YOUR_KEY\" \
+curl -X POST "https://api.tik.tools/authentication/jwt?apiKey=YOUR_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"unique_id": "username"}'
+  -d '{"expire_after": 3600, "allowed_creators": ["streamer1"]}'
 ```
-</CodeGroup>
 
-<Note>
-See the [REST API Overview](/rest-api/overview) for response format and error handling.
-</Note>
+```java Java
+HttpClient client = HttpClient.newHttpClient();
+String json = "{\"expire_after\": 3600, \"allowed_creators\": [\"streamer1\"]}";
+HttpRequest req = HttpRequest.newBuilder()
+    .uri(URI.create("https://api.tik.tools/authentication/jwt?apiKey=YOUR_KEY"))
+    .header("Content-Type", "application/json")
+    .POST(HttpRequest.BodyPublishers.ofString(json))
+    .build();
+HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
+// Parse token from response body
+```
+
+```go Go
+payload := bytes.NewBufferString(\
+```
+
+```csharp C#
+using var client = new HttpClient();
+var json = new StringContent(
+    @"{""expire_after"":3600,""allowed_creators"":[""streamer1""]}",
+    Encoding.UTF8, "application/json");
+var res = await client.PostAsync(
+    "https://api.tik.tools/authentication/jwt?apiKey=YOUR_KEY", json);
+Console.WriteLine(await res.Content.ReadAsStringAsync());
+```
+
+</CodeGroup>

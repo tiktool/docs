@@ -1,21 +1,33 @@
-﻿---
+---
 title: "Fetch Events"
-description: "Fetch live stream events via HTTP long-polling."
+description: "Fetch live stream events via HTTP long-polling. Returns the same real-time data as WebSocket (chat, gifts, likes, battles) but over HTTP. Uses TikTok's binary protobuf protocol and returns decoded eve"
 ---
 
 ## `POST` `/webcast/fetch`
 
-Fetch live stream events via HTTP long-polling.
+Fetch live stream events via HTTP long-polling. Returns the same real-time data as WebSocket (chat, gifts, likes, battles) but over HTTP. Uses TikTok's binary protobuf protocol and returns decoded events.
 
-### Authentication
+**How it works:** The API signs and fetches TikTok's internal polling endpoint, decodes the protobuf response, and returns structured event data. Pass a `cursor` from the previous response for continuous polling.
 
-Pass your API key as a query parameter:
+**Identification:** Provide either `unique_id` (username) or `room_id`. If using `unique_id`, the server resolves the room ID automatically.
 
+**WebSocket vs Fetch:** WebSocket connections are preferred for real-time use — they deliver events instantly with lower latency. Use `/webcast/fetch` when WebSocket is not possible (serverless environments, HTTP-only infrastructure) or for one-off data snapshots.
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `unique_id` | string | No | TikTok username |
+| `room_id` | string | No | Room ID (alternative to unique_id) |
+| `cursor` | string | No | Pagination cursor from previous response |
+
+### Response
+
+```json
+{ "status_code": 0, "data": { "room_id": "...", "alive": true, "message_count": 5, "raw_data": "base64...", "cursor": "" } }
 ```
-/webcast/fetch?apiKey=YOUR_API_KEY
-```
 
-### Example
+### Examples
 
 <CodeGroup>
 ```javascript Node.js
@@ -24,8 +36,8 @@ const res = await fetch('https://api.tik.tools/webcast/fetch?apiKey=YOUR_KEY', {
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ unique_id: 'username' })
 });
-const data = await res.json();
-console.log(data);
+const { data } = await res.json();
+console.log(\
 ```
 
 ```python Python
@@ -33,16 +45,40 @@ import requests
 res = requests.post('https://api.tik.tools/webcast/fetch',
     params={'apiKey': 'YOUR_KEY'},
     json={'unique_id': 'username'})
-print(res.json())
+data = res.json()['data']
+print(f"Messages: {data['message_count']}")
 ```
 
 ```bash cURL
-curl -X POST \"https://api.tik.tools/webcast/fetch?apiKey=YOUR_KEY\" \
+curl -X POST "https://api.tik.tools/webcast/fetch?apiKey=YOUR_KEY" \
   -H "Content-Type: application/json" \
   -d '{"unique_id": "username"}'
 ```
-</CodeGroup>
 
-<Note>
-See the [REST API Overview](/rest-api/overview) for response format and error handling.
-</Note>
+```java Java
+HttpClient client = HttpClient.newHttpClient();
+String json = "{\"unique_id\": \"username\"}";
+HttpRequest req = HttpRequest.newBuilder()
+    .uri(URI.create("https://api.tik.tools/webcast/fetch?apiKey=YOUR_KEY"))
+    .header("Content-Type", "application/json")
+    .POST(HttpRequest.BodyPublishers.ofString(json))
+    .build();
+HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
+System.out.println(res.body());
+```
+
+```go Go
+payload := bytes.NewBufferString(\
+```
+
+```csharp C#
+using var client = new HttpClient();
+var json = new StringContent(
+    @"{""unique_id"":""username""}",
+    Encoding.UTF8, "application/json");
+var res = await client.PostAsync(
+    "https://api.tik.tools/webcast/fetch?apiKey=YOUR_KEY", json);
+Console.WriteLine(await res.Content.ReadAsStringAsync());
+```
+
+</CodeGroup>

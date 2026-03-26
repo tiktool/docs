@@ -1,48 +1,82 @@
-﻿---
+---
 title: "Bulk Live Check"
-description: "Check live status for up to 100 TikTok users in a single request."
+description: "Check live status for multiple TikTok users in a single request. Returns the same data as check_alive but for up to 100 users simultaneously."
 ---
 
 ## `POST` `/webcast/bulk_live_check`
 
-Check live status for up to 100 TikTok users in a single request.
+Check live status for multiple TikTok users in a single request. Returns the same data as `check_alive` but for up to 100 users simultaneously.
 
-### Authentication
+**Batch limits:** Free: 1 user, Pro: up to 50 users, Ultra: up to 100 users per request. Pass usernames as a JSON array in the request body.
 
-Pass your API key as a query parameter:
+**Response data:** Returns an array with each user's `unique_id`, `room_id`, `alive` status, `title`, and `userCount`. Users who are offline return `alive: false` with an empty `room_id`.
 
+**Use cases:** Creator monitoring dashboards that track dozens of streamers, automated alert systems, multi-stream aggregators, or periodically scanning talent rosters to detect who's live.
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `unique_ids` | string[] | Yes | Array of TikTok usernames |
+
+### Response
+
+```json
+{ "status_code": 0, "data": { "user1": true, "user2": false, "user3": true } }
 ```
-/webcast/bulk_live_check?apiKey=YOUR_API_KEY
-```
 
-### Example
+### Examples
 
 <CodeGroup>
 ```javascript Node.js
 const res = await fetch('https://api.tik.tools/webcast/bulk_live_check?apiKey=YOUR_KEY', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ unique_id: 'username' })
+  body: JSON.stringify({ unique_ids: ['user1', 'user2', 'user3'] })
 });
-const data = await res.json();
-console.log(data);
+const { data } = await res.json();
+Object.entries(data).forEach(([user, live]) => console.log(\
 ```
 
 ```python Python
 import requests
 res = requests.post('https://api.tik.tools/webcast/bulk_live_check',
     params={'apiKey': 'YOUR_KEY'},
-    json={'unique_id': 'username'})
-print(res.json())
+    json={'unique_ids': ['user1', 'user2', 'user3']})
+for user, live in res.json()['data'].items():
+    print(f"{user}: {'Live' if live else 'Offline'}")
 ```
 
 ```bash cURL
-curl -X POST \"https://api.tik.tools/webcast/bulk_live_check?apiKey=YOUR_KEY\" \
+curl -X POST "https://api.tik.tools/webcast/bulk_live_check?apiKey=YOUR_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"unique_id": "username"}'
+  -d '{"unique_ids": ["user1", "user2", "user3"]}'
 ```
-</CodeGroup>
 
-<Note>
-See the [REST API Overview](/rest-api/overview) for response format and error handling.
-</Note>
+```java Java
+HttpClient client = HttpClient.newHttpClient();
+String json = "{\"unique_ids\": [\"user1\", \"user2\", \"user3\"]}";
+HttpRequest req = HttpRequest.newBuilder()
+    .uri(URI.create("https://api.tik.tools/webcast/bulk_live_check?apiKey=YOUR_KEY"))
+    .header("Content-Type", "application/json")
+    .POST(HttpRequest.BodyPublishers.ofString(json))
+    .build();
+HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
+System.out.println(res.body());
+```
+
+```go Go
+payload := bytes.NewBufferString(\
+```
+
+```csharp C#
+using var client = new HttpClient();
+var json = new StringContent(
+    @"{""unique_ids"":[""user1"",""user2"",""user3""]}",
+    Encoding.UTF8, "application/json");
+var res = await client.PostAsync(
+    "https://api.tik.tools/webcast/bulk_live_check?apiKey=YOUR_KEY", json);
+Console.WriteLine(await res.Content.ReadAsStringAsync());
+```
+
+</CodeGroup>

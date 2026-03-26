@@ -1,41 +1,67 @@
-﻿---
+---
 title: "Rate Limits Endpoint"
-description: "Check your current API key rate limit status and remaining quota."
+description: "Check your current API key's rate limit status, tier information, and remaining quota across all features."
 ---
 
 ## `GET` `/webcast/rate_limits`
 
-Check your current API key rate limit status and remaining quota.
+Check your current API key's rate limit status, tier information, and remaining quota across all features.
 
-### Authentication
+**What's returned:** Your current tier (free/pro/ultra), API request limits (per-minute sliding window), WebSocket connection limits, bulk check capacity, and feed daily quota. Also includes `reset_at` timestamp for when limits refresh.
 
-Pass your API key as a query parameter:
+**Use cases:** Monitor quota consumption in production, display remaining capacity in dashboards, or implement client-side throttling to avoid hitting limits.
 
+**Headers:** Every API response also includes `X-RateLimit-Limit`, `X-RateLimit-Remaining`, and `X-RateLimit-Reset` headers — but this endpoint gives a comprehensive overview of all your limits in one call.
+
+### Response
+
+```json
+{ "status_code": 0, "data": { "tier": "basic", "api": { "limit": 30, "remaining": 28, "reset_at": 1234567890 }, "websocket": { "limit": 10, "current": 2 } } }
 ```
-/webcast/rate_limits?apiKey=YOUR_API_KEY
-```
 
-### Example
+### Examples
 
 <CodeGroup>
 ```javascript Node.js
 const res = await fetch('https://api.tik.tools/webcast/rate_limits?apiKey=YOUR_KEY');
-const data = await res.json();
-console.log(data);
+const { data } = await res.json();
+console.log(\
 ```
 
 ```python Python
 import requests
 res = requests.get('https://api.tik.tools/webcast/rate_limits',
     params={'apiKey': 'YOUR_KEY'})
-print(res.json())
+data = res.json()['data']
+print(f"{data['api']['remaining']}/{data['api']['limit']} remaining")
 ```
 
 ```bash cURL
-curl \"https://api.tik.tools/webcast/rate_limits?apiKey=YOUR_KEY\"
+curl "https://api.tik.tools/webcast/rate_limits?apiKey=YOUR_KEY"
 ```
-</CodeGroup>
 
-<Note>
-See the [REST API Overview](/rest-api/overview) for response format and error handling.
-</Note>
+```java Java
+HttpClient client = HttpClient.newHttpClient();
+HttpRequest req = HttpRequest.newBuilder()
+    .uri(URI.create("https://api.tik.tools/webcast/rate_limits?apiKey=YOUR_KEY"))
+    .GET().build();
+HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
+System.out.println(res.body());
+```
+
+```go Go
+resp, err := http.Get("https://api.tik.tools/webcast/rate_limits?apiKey=YOUR_KEY")
+if err != nil { log.Fatal(err) }
+defer resp.Body.Close()
+body, _ := io.ReadAll(resp.Body)
+fmt.Println(string(body))
+```
+
+```csharp C#
+using var client = new HttpClient();
+var res = await client.GetStringAsync(
+    "https://api.tik.tools/webcast/rate_limits?apiKey=YOUR_KEY");
+Console.WriteLine(res);
+```
+
+</CodeGroup>

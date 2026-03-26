@@ -1,0 +1,82 @@
+---
+title: "User Earnings"
+description: "Retrieve TikTok LIVE earnings data for a creator including diamonds received, coin equivalent, and period breakdowns. This is an authenticated endpoint that proxies TikTok's creator earnings API."
+---
+
+## `GET` `/webcast/user_earnings`
+
+Retrieve TikTok LIVE earnings data for a creator including diamonds received, coin equivalent, and period breakdowns. This is an authenticated endpoint that proxies TikTok's creator earnings API.
+
+**Authentication required:** You must include TikTok session cookies via `x-cookie-header`. Only works when the session belongs to the creator whose earnings are being requested (you can't view other people's earnings).
+
+**Response data:** Returns `diamonds` (total received), `coins` (equivalent coin value), and `period` breakdown. Diamond-to-USD conversion: 1 diamond ≈ $0.005 USD.
+
+**Use cases:** Creator dashboards showing real-time earnings, financial analytics for agency talent management, or automated earnings reports for multi-stream operations.
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `unique_id` | string | Yes | TikTok username |
+| `period` | string | No | Period filter: "daily" (default) |
+
+### Response
+
+```json
+{ "status_code": 0, "data": { "diamonds": 1500, "coins": 75000, "period": "daily" } }
+```
+
+### Examples
+
+<CodeGroup>
+```javascript Node.js
+const res = await fetch('https://api.tik.tools/webcast/user_earnings?unique_id=creator&apiKey=YOUR_KEY', {
+  headers: { 'x-cookie-header': 'sessionid=YOUR_TIKTOK_COOKIES' }
+});
+const { data } = await res.json();
+console.log(\
+```
+
+```python Python
+import requests
+res = requests.get('https://api.tik.tools/webcast/user_earnings',
+    params={'unique_id': 'creator', 'apiKey': 'YOUR_KEY'},
+    headers={'x-cookie-header': 'sessionid=YOUR_TIKTOK_COOKIES'})
+print(res.json()['data'])
+```
+
+```bash cURL
+curl "https://api.tik.tools/webcast/user_earnings?unique_id=creator&apiKey=YOUR_KEY" \
+  -H "x-cookie-header: sessionid=YOUR_TIKTOK_COOKIES"
+```
+
+```java Java
+HttpClient client = HttpClient.newHttpClient();
+HttpRequest req = HttpRequest.newBuilder()
+    .uri(URI.create("https://api.tik.tools/webcast/user_earnings?unique_id=creator&apiKey=YOUR_KEY"))
+    .header("x-cookie-header", "sessionid=YOUR_TIKTOK_COOKIES")
+    .GET().build();
+HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
+System.out.println(res.body());
+```
+
+```go Go
+req, _ := http.NewRequest("GET",
+    "https://api.tik.tools/webcast/user_earnings?unique_id=creator&apiKey=YOUR_KEY", nil)
+req.Header.Set("x-cookie-header", "sessionid=YOUR_TIKTOK_COOKIES")
+resp, err := http.DefaultClient.Do(req)
+if err != nil { log.Fatal(err) }
+defer resp.Body.Close()
+body, _ := io.ReadAll(resp.Body)
+fmt.Println(string(body))
+```
+
+```csharp C#
+using var client = new HttpClient();
+client.DefaultRequestHeaders.Add("x-cookie-header", "sessionid=YOUR_TIKTOK_COOKIES");
+var res = await client.GetStringAsync(
+    "https://api.tik.tools/webcast/user_earnings?unique_id=creator&apiKey=YOUR_KEY");
+Console.WriteLine(res);
+```
+
+</CodeGroup>

@@ -1,21 +1,31 @@
-﻿---
+---
 title: "Room ID"
-description: "Resolve a TikTok username to their current live room ID."
+description: "Resolve a TikTok username to their current live room ID. The server resolves the unique_id to a room_id on your behalf — no client-side HTML scraping needed."
 ---
 
 ## `POST` `/webcast/room_id`
 
-Resolve a TikTok username to their current live room ID.
+Resolve a TikTok username to their current live room ID. The server resolves the `unique_id` to a `room_id` on your behalf — no client-side HTML scraping needed.
 
-### Authentication
+**How it works:** The server checks its cache first (30-minute TTL). For Pro/Ultra/Admin tiers, resolution uses a residential proxy for reliable results. For other tiers, the server attempts direct resolution (may fail from datacenter IPs).
 
-Pass your API key as a query parameter:
+**Response data:** Returns `unique_id`, `room_id`, `alive` (whether the user is currently live), and `cached` (whether the result came from server cache). Use the returned `room_id` with other endpoints like `sign_websocket`, `rankings`, `gift_info`, etc.
 
+**Use cases:** When you only have a username and need the `room_id` for other API calls. Many endpoints accept `unique_id` directly, but some (like `sign_websocket`) require the room ID. This endpoint eliminates the need for client-side TikTok page scraping.
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `unique_id` | string | Yes | TikTok username (without @) |
+
+### Response
+
+```json
+{ "status_code": 0, "data": { "unique_id": "username", "room_id": "7123456789", "alive": true, "cached": false } }
 ```
-/webcast/room_id?apiKey=YOUR_API_KEY
-```
 
-### Example
+### Examples
 
 <CodeGroup>
 ```javascript Node.js
@@ -24,8 +34,8 @@ const res = await fetch('https://api.tik.tools/webcast/room_id?apiKey=YOUR_KEY',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ unique_id: 'username' })
 });
-const data = await res.json();
-console.log(data);
+const { data } = await res.json();
+console.log(\
 ```
 
 ```python Python
@@ -33,16 +43,40 @@ import requests
 res = requests.post('https://api.tik.tools/webcast/room_id',
     params={'apiKey': 'YOUR_KEY'},
     json={'unique_id': 'username'})
-print(res.json())
+data = res.json()['data']
+print(f"Room ID: {data['room_id']}, Live: {data['alive']}")
 ```
 
 ```bash cURL
-curl -X POST \"https://api.tik.tools/webcast/room_id?apiKey=YOUR_KEY\" \
-  -H "Content-Type: application/json" \
+curl -X POST "https://api.tik.tools/webcast/room_id?apiKey=YOUR_KEY" \\
+  -H "Content-Type: application/json" \\
   -d '{"unique_id": "username"}'
 ```
-</CodeGroup>
 
-<Note>
-See the [REST API Overview](/rest-api/overview) for response format and error handling.
-</Note>
+```java Java
+HttpClient client = HttpClient.newHttpClient();
+String json = "{\\"unique_id\\": \\"username\\"}";
+HttpRequest req = HttpRequest.newBuilder()
+    .uri(URI.create("https://api.tik.tools/webcast/room_id?apiKey=YOUR_KEY"))
+    .header("Content-Type", "application/json")
+    .POST(HttpRequest.BodyPublishers.ofString(json))
+    .build();
+HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
+System.out.println(res.body());
+```
+
+```go Go
+payload := bytes.NewBufferString(\
+```
+
+```csharp C#
+using var client = new HttpClient();
+var json = new StringContent(
+    @"{""unique_id"":""username""}",
+    Encoding.UTF8, "application/json");
+var res = await client.PostAsync(
+    "https://api.tik.tools/webcast/room_id?apiKey=YOUR_KEY", json);
+Console.WriteLine(await res.Content.ReadAsStringAsync());
+```
+
+</CodeGroup>

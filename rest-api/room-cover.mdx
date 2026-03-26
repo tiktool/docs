@@ -1,41 +1,73 @@
-﻿---
+---
 title: "Room Cover"
-description: "Get the cover image URL of an active live stream."
+description: "Get the high-quality cover image (thumbnail) URL of an active live stream. Returns the same image TikTok displays on the live feed before a user taps to watch."
 ---
 
 ## `GET` `/webcast/room_cover`
 
-Get the cover image URL of an active live stream.
+Get the high-quality cover image (thumbnail) URL of an active live stream. Returns the same image TikTok displays on the live feed before a user taps to watch.
 
-### Authentication
+**Image quality:** Returns the highest resolution available from TikTok's CDN. Cover images are typically 720x960 or higher, served as JPEG/WebP from TikTok's image CDN.
 
-Pass your API key as a query parameter:
+**Use cases:** Building live stream galleries, social media embeds, notification cards with stream previews, or monitoring dashboards that show stream thumbnails alongside viewer counts.
 
+**Note:** Cover images are set by the streamer before going live. If no custom cover is set, TikTok uses a default or auto-generated thumbnail. Returns an error if the user is not currently live.
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `unique_id` | string | No | TikTok username |
+| `room_id` | string | No | TikTok room ID |
+
+### Response
+
+```json
+{ "status_code": 0, "data": { "room_id": "...", "cover_url": "https://..." } }
 ```
-/webcast/room_cover?apiKey=YOUR_API_KEY
-```
 
-### Example
+### Examples
 
 <CodeGroup>
 ```javascript Node.js
-const res = await fetch('https://api.tik.tools/webcast/room_cover?apiKey=YOUR_KEY');
-const data = await res.json();
-console.log(data);
+const res = await fetch('https://api.tik.tools/webcast/room_cover?unique_id=username&apiKey=YOUR_KEY');
+const { data } = await res.json();
+console.log(data.cover_url);
 ```
 
 ```python Python
 import requests
 res = requests.get('https://api.tik.tools/webcast/room_cover',
-    params={'apiKey': 'YOUR_KEY'})
-print(res.json())
+    params={'unique_id': 'username', 'apiKey': 'YOUR_KEY'})
+print(res.json()['data']['cover_url'])
 ```
 
 ```bash cURL
-curl \"https://api.tik.tools/webcast/room_cover?apiKey=YOUR_KEY\"
+curl "https://api.tik.tools/webcast/room_cover?unique_id=username&apiKey=YOUR_KEY"
 ```
-</CodeGroup>
 
-<Note>
-See the [REST API Overview](/rest-api/overview) for response format and error handling.
-</Note>
+```java Java
+HttpClient client = HttpClient.newHttpClient();
+HttpRequest req = HttpRequest.newBuilder()
+    .uri(URI.create("https://api.tik.tools/webcast/room_cover?unique_id=username&apiKey=YOUR_KEY"))
+    .GET().build();
+HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
+System.out.println(res.body());
+```
+
+```go Go
+resp, err := http.Get("https://api.tik.tools/webcast/room_cover?unique_id=username&apiKey=YOUR_KEY")
+if err != nil { log.Fatal(err) }
+defer resp.Body.Close()
+body, _ := io.ReadAll(resp.Body)
+fmt.Println(string(body))
+```
+
+```csharp C#
+using var client = new HttpClient();
+var res = await client.GetStringAsync(
+    "https://api.tik.tools/webcast/room_cover?unique_id=username&apiKey=YOUR_KEY");
+Console.WriteLine(res);
+```
+
+</CodeGroup>
