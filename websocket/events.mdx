@@ -199,28 +199,142 @@ A viewer subscribes to the streamer.
 
 ---
 
-### linkMicBattle
+### battle
 
-Battle status update — when two streamers enter a live battle.
+PK lifecycle — fires when a battle (Link Mic PK) starts, changes status, or ends.
 
 ```json
 {
-  "event": "linkMicBattle",
+  "event": "battle",
   "data": {
-    "type": "linkMicBattle",
-    "battleUsers": [
-      { "uniqueId": "streamer1", "score": 150 },
-      { "uniqueId": "streamer2", "score": 120 }
-    ],
-    "battleStatus": 1
+    "type": "battle",
+    "battleId": "7298765432109876543",
+    "status": 1,
+    "battleDuration": 300,
+    "teams": [],
+    "scores": []
   }
 }
 ```
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `battleUsers` | array | Battling streamers with scores |
-| `battleStatus` | number | 1 = started, 2 = in progress, 3 = ended |
+| `battleId` | string | Unique battle ID |
+| `status` | number | 1 = ACTIVE, 2 = STARTING, 3 = ENDED, 4 = PREPARING |
+| `battleDuration` | number | Total battle duration in seconds (typically 300) |
+
+---
+
+### battleArmies
+
+Periodic score update during a PK with **per-host MVP breakdown**.
+
+```json
+{
+  "event": "battleArmies",
+  "data": {
+    "type": "battleArmies",
+    "battleId": "7298765432109876543",
+    "status": 1,
+    "matchId": "...",
+    "sessionId": "...",
+    "serverTsMs": 1747654321000,
+    "durationSec": 300,
+    "secsRemaining": 187,
+    "hosts": [
+      {
+        "hostUserId": "6892636847263982593",
+        "teamTotalScore": 12450,
+        "teamIdx": 0,
+        "contributors": [
+          { "userId": "111", "score": 8000, "nickname": "MVP_Gifter" },
+          { "userId": "222", "score": 3000, "nickname": "OtherFan" },
+          { "userId": "333", "score": 1450, "nickname": "ThirdFan" }
+        ]
+      },
+      {
+        "hostUserId": "7012345678901234567",
+        "teamTotalScore": 9800,
+        "teamIdx": 1,
+        "contributors": []
+      }
+    ]
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `battleId` | string | Battle session tag |
+| `matchId` | string | Stable match ID across multi-round PK |
+| `sessionId` | string | Per-round session ID |
+| `serverTsMs` | number | TikTok server clock (ms epoch) at frame emit |
+| `durationSec` | number | Total battle duration in seconds |
+| `secsRemaining` | number | Seconds remaining, computed from `serverTsMs` (no clock drift) |
+| `hosts[]` | array | One entry per PK-side host. Multi-guest PKs include up to 4 per side |
+| `hosts[].hostUserId` | string | Host's TikTok userId |
+| `hosts[].teamTotalScore` | number | Total diamonds for this host's team |
+| `hosts[].teamIdx` | number | Side index (0 = left, 1 = right) |
+| `hosts[].contributors[]` | array | Per-gifter breakdown, **sorted MVP first** |
+| `contributors[].userId` | string | Gifter's TikTok userId |
+| `contributors[].score` | number | Diamonds contributed |
+| `contributors[].nickname` | string | Gifter's display name |
+
+<Note>
+`hosts[0].contributors[0]` is always the **MVP** (highest gifter on that side).
+</Note>
+
+---
+
+### battleItemCard
+
+Booster / power-up card activated during a PK: x2/x3 multipliers, gloves (crit),
+mist, thunder, extra-time, match-guide. Includes drop-in overlay assets straight
+from TikTok's CDN.
+
+```json
+{
+  "event": "battleItemCard",
+  "data": {
+    "type": "battleItemCard",
+    "battleId": "7298765432109876543",
+    "cardType": 11,
+    "effect": "booster_x3",
+    "effectKey": "ttlive_match_announcement_userSentBooster_no3",
+    "multiplier": 3,
+    "senderUserId": "111",
+    "senderNickname": "Big_Spender",
+    "senderUniqueId": "big_spender",
+    "senderAvatarUrl": "https://p16-sign.tiktokcdn-us.com/...",
+    "activatedAtSec": 1747654321,
+    "durationSec": 30,
+    "endsAtSec": 1747654351,
+    "commentTemplate": "{0:user} sent x3 booster",
+    "iconUrl": "https://p19.tiktokcdn-us.com/...card_crit_v3.webp",
+    "iconKey": "card_crit_v3",
+    "accentColor": "#E0D4BC"
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `battleId` | string | The PK this card belongs to |
+| `cardType` | number | 2 = gloves/crit, 3 = mist, 4 = match_guide, 10 = x2?, 11 = x3, ... |
+| `effect` | string | `gloves` \| `mist` \| `booster_x2` \| `booster_x3` \| `match_guide` \| `thunder` \| `extra_time` \| raw key |
+| `effectKey` | string | Raw TikTok resource key |
+| `multiplier` | number | 2 or 3 for boosters, else 0 |
+| `senderUserId` | string | Gifter who activated the card |
+| `senderNickname` | string | Display name of the sender |
+| `senderUniqueId` | string | Username (`@handle`) of the sender |
+| `senderAvatarUrl` | string | Sender's avatar (TikTok CDN URL) |
+| `activatedAtSec` | number | Unix seconds when activated |
+| `durationSec` | number | Active duration in seconds |
+| `endsAtSec` | number | Unix seconds when buff ends |
+| `commentTemplate` | string | Display string, e.g. `"{0:user} sent 1 magic mist"` |
+| `iconUrl` | string | Full TikTok CDN URL for the card art (webp/jpeg) |
+| `iconKey` | string | Short id, e.g. `card_mist_v3`, `card_crit_v3`, `top3_buffer` |
+| `accentColor` | string | Hex color, e.g. `#BCD9E0` (mist blue), `#E0D4BC` (gloves tan) |
 
 ---
 
