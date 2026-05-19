@@ -50,14 +50,35 @@ client.on('follow', (event) => { /* new follower */ });
 client.on('share', (event) => { /* stream shared */ });
 client.on('roomUserSeq', (event) => { /* viewer count update */ });
 client.on('subscribe', (event) => { /* new subscriber */ });
-client.on('linkMicBattle', (event) => { /* battle update */ });
+client.on('battle', (event) => { /* PK on/off */ });
+client.on('battleArmies', (event) => { /* PK score + MVP breakdown */ });
+client.on('battleItemCard', (event) => { /* x2/x3 boosters, gloves, mist, ... */ });
 client.on('emote', (event) => { /* animated emote */ });
 client.on('envelope', (event) => { /* treasure box */ });
 client.on('questionNew', (event) => { /* Q&A question */ });
+client.on('roomPin', (event) => { /* starred / pinned message */ });
+```
+
+### PK Battles — MVP + Boosters
+
+```javascript
+client.on('battleArmies', (e) => {
+  console.log(`⏱ ${e.secsRemaining}s left`);
+  for (const host of e.hosts ?? []) {
+    const mvp = host.contributors[0]; // sorted MVP first
+    console.log(`${host.hostUserId}: ${host.teamTotalScore} (MVP: ${mvp?.nickname} ${mvp?.score})`);
+  }
+});
+
+client.on('battleItemCard', (e) => {
+  const tag = e.multiplier > 0 ? `x${e.multiplier} BOOSTER` : e.effect.toUpperCase();
+  console.log(`💥 ${e.senderNickname} → ${tag}`);
+  // e.iconUrl / e.accentColor → drop-in OBS overlay
+});
 ```
 
 ## Source Code
 
-<Card title="GitHub Repository" icon="github" href="https://github.com/tiktool/tiktok-live-api-sdk">
+<Card title="GitHub Repository" icon="github" href="https://github.com/tiktool/tiktok-live-api">
   MIT-licensed. Full source code available.
 </Card>

@@ -202,3 +202,120 @@ var json = await client.GetStringAsync(
 ```
 
 </CodeGroup>
+
+---
+
+## `POST` `/webcast/feed`
+
+**Server-side feed fetch** — the server fetches TikTok's feed through its proxy and returns decoded room data directly. No two-step process needed. Ideal for clients in geo-restricted regions or server-to-server integrations.
+
+<Note>
+This endpoint requires a **Pro** tier subscription or higher. Uses your daily feed quota (Pro: 100/day, Ultra: 2,000/day).
+</Note>
+
+### Request Body
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `server_fetch` | boolean | **Yes** | Set to `true` for server-side fetching. Without this, returns signed URL only. |
+| `region` | string | No | Target region hint (default: US) |
+| `channel_id` | string | No | Feed channel: 87 = Recommended (default), 86 = Suggested, 89 = Gaming, 42 = Following |
+| `count` | number | No | Rooms per page (default: 20, max: 50) |
+| `max_time` | string | No | Pagination cursor from previous response's `cursor` field |
+| `session_id` | string | No | Your TikTok sessionid cookie for personalized results |
+| `sign_only` | boolean | No | Set to `true` to only return the signed URL (no server fetch) |
+
+### Response
+
+```json
+{
+  "status_code": 0,
+  "rooms": [
+    {
+      "room_id": "7123456789",
+      "title": "🔴 Live Now!",
+      "owner": {
+        "user_id": "123456",
+        "nickname": "Display Name",
+        "unique_id": "streamer_name",
+        "avatar": "https://..."
+      },
+      "user_count": 1250,
+      "like_count": 5000,
+      "cover": "https://..."
+    }
+  ],
+  "room_count": 15,
+  "cursor": "1773128824428",
+  "has_more": true,
+  "feed_remaining": 99,
+  "feed_limit": 100,
+  "proxy_used": "webshare",
+  "response_format": "json"
+}
+```
+
+### Examples
+
+<CodeGroup>
+````javascript Node.js
+// Server-side fetch — no two-step process needed
+const res = await fetch('https://api.tik.tools/webcast/feed?apiKey=YOUR_KEY', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    server_fetch: true,
+    region: 'US',
+    channel_id: '87',
+    count: 20,
+  })
+});
+const { rooms, cursor, has_more, feed_remaining } = await res.json();
+
+for (const room of rooms) {
+  console.log(`🔴 @${room.owner.unique_id}: "${room.title}" — ${room.user_count} viewers`);
+}
+
+// Pagination
+if (has_more && cursor) {
+  const page2 = await fetch('https://api.tik.tools/webcast/feed?apiKey=YOUR_KEY', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ server_fetch: true, region: 'US', max_time: cursor }),
+  });
+  const next = await page2.json();
+  // ... process next.rooms
+}
+````
+
+```python Python
+import requests
+
+# Server-side fetch — single request, decoded response
+res = requests.post('https://api.tik.tools/webcast/feed',
+    params={'apiKey': 'YOUR_KEY'},
+    json={
+        'server_fetch': True,
+        'region': 'US',
+        'channel_id': '87',
+        'count': 20,
+    }
+)
+data = res.json()
+
+for room in data.get('rooms', []):
+    print(f"🔴 @{room['owner']['unique_id']}: \"{room['title']}\" — {room['user_count']} viewers")
+
+# Pagination
+if data.get('has_more') and data.get('cursor'):
+    page2 = requests.post('https://api.tik.tools/webcast/feed',
+        params={'apiKey': 'YOUR_KEY'},
+        json={'server_fetch': True, 'region': 'US', 'max_time': data['cursor']})
+```
+
+```bash cURL
+curl -X POST "https://api.tik.tools/webcast/feed?apiKey=YOUR_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"server_fetch": true, "region": "US", "channel_id": "87", "count": 20}'
+```
+</CodeGroup>
