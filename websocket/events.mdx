@@ -453,6 +453,290 @@ A viewer joins the live stream.
 
 ---
 
+## v3 Tier 4 events
+
+The events below were modeled from a 30-minute capture across 1963 concurrent rooms (752,955 frames). Each carries `protoVersion: 3`.
+
+### giftDynamicRestriction
+
+Dynamic gift-catalog restriction flip (per-room availability / age-gating).
+
+```json
+{ "event": "giftDynamicRestriction", "data": { "type": "giftDynamicRestriction", "rawPayload": "...", "protoVersion": 3 } }
+```
+
+---
+
+### inRoomBanner
+
+In-room activity banner (challenges, donation drives) carrying a JSON descriptor.
+
+```json
+{ "event": "inRoomBanner", "data": { "type": "inRoomBanner", "activityJson": "{\"activity_indicator\":{\"currents\":[...]}}", "protoVersion": 3 } }
+```
+
+---
+
+### battlePunishFinish
+
+PK punishment phase finished. Loser-side punishment screen ended.
+
+```json
+{
+  "event": "battlePunishFinish",
+  "data": {
+    "type": "battlePunishFinish",
+    "battleId": "7648485765504125714",
+    "punishedUserId": "7204121790628185094",
+    "punishType": 1,
+    "sessionId": "7648485804360108818",
+    "protoVersion": 3
+  }
+}
+```
+
+---
+
+### battleNotice
+
+PK notice (version-mismatch toasts, invite-failure messages).
+
+```json
+{ "event": "battleNotice", "data": { "type": "battleNotice", "noticeCode": 6, "noticeKey": "ttlive_liveMatch_inviteFail_versionUpdateTo", "noticeText": "Update your TikTok to the latest version...", "protoVersion": 3 } }
+```
+
+---
+
+### hostBoard
+
+Host leaderboard board update.
+
+```json
+{ "event": "hostBoard", "data": { "type": "hostBoard", "rawPayload": "...", "protoVersion": 3 } }
+```
+
+---
+
+### poll
+
+In-stream poll lifecycle (open / vote / close).
+
+```json
+{
+  "event": "poll",
+  "data": {
+    "type": "poll",
+    "pollId": "7648486279037946655",
+    "action": 2,
+    "status": 2,
+    "questionPayload": "LETS FILL UP THE GALLERY",
+    "optionsPayload": "HeartMe | Like | Share | repost | Subscribe",
+    "protoVersion": 3
+  }
+}
+```
+
+---
+
+### competition
+
+Cross-stream competition event (gift duels, group challenges).
+
+```json
+{ "event": "competition", "data": { "type": "competition", "competitionType": 8, "layoutSubtype": "cohost_take_stage_v2_2", "protoVersion": 3 } }
+```
+
+---
+
+### streamStatus
+
+Stream status flip (recording state, content-classification rechecks).
+
+```json
+{ "event": "streamStatus", "data": { "type": "streamStatus", "rawPayload": "...", "protoVersion": 3 } }
+```
+
+---
+
+### battleGameplay
+
+PK mini-game gameplay state (Whack-A-Mole, Tic-Tac-Toe, etc.).
+
+```json
+{
+  "event": "battleGameplay",
+  "data": {
+    "type": "battleGameplay",
+    "gameplayId": "7648486290535369480",
+    "gameplayType": 2,
+    "subType": 1,
+    "protoVersion": 3
+  }
+}
+```
+
+---
+
+### aiSummary
+
+TikTok AI summary of the room (entry-time recap).
+
+```json
+{
+  "event": "aiSummary",
+  "data": {
+    "type": "aiSummary",
+    "summary": "Casual dance session with spontaneous singing",
+    "scenarioKey": "web_enter_room_asr_summary",
+    "iconUrl": "https://p16-webcast.tiktokcdn.com/...",
+    "labelKey": "ttlive_AIsummary_viewer_label",
+    "displayDurationMs": 3000,
+    "protoVersion": 3
+  }
+}
+```
+
+---
+
+### giftGallery
+
+Host-side gift wall snapshot.
+
+```json
+{ "event": "giftGallery", "data": { "type": "giftGallery", "transactionId": "202606070317035805FCD15954308C96D1", "protoVersion": 3 } }
+```
+
+---
+
+### cohostLayoutUpdate
+
+Cohost layout subtype change.
+
+```json
+{ "event": "cohostLayoutUpdate", "data": { "type": "cohostLayoutUpdate", "layoutSubtype": "cohost_normal_expand_4", "protoVersion": 3 } }
+```
+
+---
+
+### fansEvent
+
+Fan-club event (tier-up, community heart-me look refresh, etc.).
+
+```json
+{ "event": "fansEvent", "data": { "type": "fansEvent", "fanType": 7, "eventKey": "ttlive_fanClub_communityHeartMe_tierUp_club", "protoVersion": 3 } }
+```
+
+---
+
+### linkScreenChange
+
+PK split-screen layout flip (1v1 / 1vN / cohost mode swap).
+
+```json
+{ "event": "linkScreenChange", "data": { "type": "linkScreenChange", "changeType": 2, "sessionInfo": "7648433431395453718_16994212205653601499_0", "protoVersion": 3 } }
+```
+
+---
+
+### roomSticker
+
+Room-wide sticker drop (host posted a labelled sticker).
+
+```json
+{ "event": "roomSticker", "data": { "type": "roomSticker", "stickerPayload": "My label - BAYAN NG KONOHA - #000000", "protoVersion": 3 } }
+```
+
+---
+
+### bottomMessage
+
+Bottom-bar safety / risk notice (`"LIVE health warning"`, `"risk_notice ..."`).
+
+```json
+{
+  "event": "bottomMessage",
+  "data": {
+    "type": "bottomMessage",
+    "noticeKey": "pm_mt_health_warning",
+    "anchorUserId": "6925591924343669765",
+    "durationSec": 599,
+    "riskKey": "risk_notice7648487247360672544",
+    "protoVersion": 3
+  }
+}
+```
+
+---
+
+### oecLiveShopping
+
+OEC live-shopping event (product card display / hide).
+
+```json
+{ "event": "oecLiveShopping", "data": { "type": "oecLiveShopping", "status": 1, "productInfo": "Make Me Melt Makeup Removing Balm $23.80", "protoVersion": 3 } }
+```
+
+---
+
+### rankText
+
+Rank text update (top-viewer announcement template).
+
+```json
+{ "event": "rankText", "data": { "type": "rankText", "templateKey": "pm_mt_topviewer_comment/{0:user} just became the top viewer", "userId": "7089122432367674373", "protoVersion": 3 } }
+```
+
+---
+
+### accessRecall
+
+Access recall (content-classification recheck pulls a gift / chat permission).
+
+```json
+{
+  "event": "accessRecall",
+  "data": {
+    "type": "accessRecall",
+    "status": 1,
+    "reason": "CONTENT_CLASSIFICATION",
+    "durationSec": 600,
+    "suspendKey": "pm_mt_giftAccess_10MinSuspend_toast",
+    "protoVersion": 3
+  }
+}
+```
+
+---
+
+### unauthorizedMember
+
+Unauthorized member notice (non-logged-in viewer hit a gated feature).
+
+```json
+{
+  "event": "unauthorizedMember",
+  "data": {
+    "type": "unauthorizedMember",
+    "templateKey": "web_nonlogin_im_1Viewer%s",
+    "countLabel": "440680",
+    "enterToastKey": "live_room_enter_toast",
+    "protoVersion": 3
+  }
+}
+```
+
+---
+
+### guestShowdown
+
+Guest showdown lifecycle (showdown intro / round flip).
+
+```json
+{ "event": "guestShowdown", "data": { "type": "guestShowdown", "showdownType": 4, "protoVersion": 3 } }
+```
+
+---
+
 ### follow
 
 A viewer follows the streamer.
@@ -801,8 +1085,8 @@ Many event payloads carry an optional `protoVersion` field. It is the schema rev
 |---|---|---|
 | `1` | initial release | Original parser shape. Kept for legacy clients pinned to v1 typings. |
 | `2` | 2026-05-19 | Multi-host PK breakdown on `battleArmies` (`hosts[].contributors[]`), `payGrade` surfacing on every user-bearing event, `matchId` / `sessionId` / `secsRemaining` on PK frames. |
-| `3` | 2026-06-07 | TikTok native captions on the WS (new `caption` event), per-chat `language` + `messageUuid`, per-gift `transactionId` + `senderUserId` + `relationship`, member `entrySource` / `entryAction` / `entryType` (creator-analytics signals), 13 brand-new event types (`linkMicOpponentGift`, `imDelete`, `goalUpdate`, `privilegeAdvance`, `commentTray`, `linkLayer`, `link`, `giftPanelUpdate`, `gameServerFeature`, `anchorToolModification`, `shareRevenueNotice`, `viewerPicksUpdate`, `fanTicket`), battle `extraHostUserIds` + `layoutSubtype`, battleArmies `transactionId` dedup. |
+| `3` | 2026-06-07 | TikTok native captions on the WS (new `caption` event), per-chat `language` + `messageUuid`, per-gift `transactionId` + `senderUserId` + `relationship`, member `entrySource` / `entryAction` / `entryType` (creator-analytics signals), 34 brand-new event types across Tier 1 / Tier 2 / Tier 3 / Tier 4 rollouts (`linkMicOpponentGift`, `imDelete`, `goalUpdate`, `privilegeAdvance`, `commentTray`, `linkLayer`, `link`, `giftPanelUpdate`, `gameServerFeature`, `anchorToolModification`, `shareRevenueNotice`, `viewerPicksUpdate`, `fanTicket`, `giftDynamicRestriction`, `inRoomBanner`, `battlePunishFinish`, `battleNotice`, `hostBoard`, `poll`, `competition`, `streamStatus`, `battleGameplay`, `aiSummary`, `giftGallery`, `cohostLayoutUpdate`, `fansEvent`, `linkScreenChange`, `roomSticker`, `bottomMessage`, `oecLiveShopping`, `rankText`, `accessRecall`, `unauthorizedMember`, `guestShowdown`), battle `extraHostUserIds` + `layoutSubtype`, battleArmies `transactionId` dedup. |
 
 `protoVersion` is **only** emitted on events that actually carry v3-additive fields - if a chat message has no language tag and no UUID, `protoVersion` is `2`. Clients written against the v1 or v2 schema can keep ignoring the field; clients that want the new data can read `if (evt.protoVersion === 3) { ... }` without any feature-detection.
 
-The full v3 discovery spec was built from a 10-minute capture across 1739 concurrent TikTok LIVE rooms (304325 frames decoded across 67 distinct method names). Every event documented above ships as of the v3 rollout. Lower-volume rare-method discoveries (~37 additional types observed under 500 frames each) are tracked internally and will land in subsequent point releases as we gather enough sample diversity to model their full field set safely.
+The full v3 discovery spec was built from a 10-minute capture across 1739 concurrent TikTok LIVE rooms (304,325 frames decoded across 67 distinct method names) and a follow-on 30-minute capture across 1963 rooms (752,955 frames). Every event documented above ships as of the v3 rollout. Long-tail rare methods observed only a handful of times across both runs (single-digit frame counts) are tracked internally and will land in point releases as sample diversity allows safe field modelling.
