@@ -177,6 +177,282 @@ A viewer joins the live stream.
 
 ---
 
+### linkMicOpponentGift
+
+**v3 (2026-06-07).** Per-gift breakdown from the OPPONENT side of a PK. TikTok now ships every gift sent on the opposing host's stream as a separate frame, so PK dashboards no longer need to relay-tap the opponent's room separately.
+
+```json
+{
+  "event": "linkMicOpponentGift",
+  "data": {
+    "type": "linkMicOpponentGift",
+    "senderUserId": "7366557450243605522",
+    "opponentRoomId": "7569885742970635284",
+    "giftId": 5655,
+    "giftPictureUrl": "https://...",
+    "startedAtMs": 1780798748470,
+    "endsAtMs": 1780798748589,
+    "transactionId": "2026060710190765D03BD889F88B8F065D",
+    "protoVersion": 3
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `senderUserId` | string | TikTok user id of the opponent-side gifter. |
+| `opponentRoomId` | string | Room id of the opposing host. |
+| `giftId` | number | Gift identifier (same id-space as the main `/webcast/gift_info` catalog). |
+| `giftPictureUrl` | string | Full TikTok CDN URL for the gift image. |
+| `startedAtMs` | number | Gift animation start (ms epoch). |
+| `endsAtMs` | number | Gift animation end (ms epoch). |
+| `transactionId` | string | Stable per-gift UUID (hex) - dedup key. |
+| `protoVersion` | number | Always 3. |
+
+---
+
+### imDelete
+
+**v3 (2026-06-07).** Chat moderation delete. Correlate back to the original chat event via `chat.messageUuid` (also v3).
+
+```json
+{
+  "event": "imDelete",
+  "data": {
+    "type": "imDelete",
+    "deletedMsgId": "7648470148944628496",
+    "protoVersion": 3
+  }
+}
+```
+
+---
+
+### goalUpdate
+
+**v3 (2026-06-07).** Stream goal progress (subscriber goal, gift goal, watch-time goal).
+
+```json
+{
+  "event": "goalUpdate",
+  "data": {
+    "type": "goalUpdate",
+    "goalKey": "live_goal_indicator_stream_goal",
+    "creatorUserId": "7280230115615114245",
+    "contributionLevel": 4,
+    "metadataJson": "{\"is_first_contribute\":false,\"challenge_type\":0,\"update_source\":2}",
+    "protoVersion": 3
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `goalKey` | string | TikTok goal key, e.g. `"live_goal_indicator_stream_goal"`. |
+| `creatorUserId` | string | User id of the creator running the goal. |
+| `contributionLevel` | number | Current contribution level (1..N). |
+| `metadataJson` | string | Raw JSON: `{ is_first_contribute, challenge_type, update_source, ... }`. |
+| `protoVersion` | number | Always 3. |
+
+---
+
+### privilegeAdvance
+
+**v3 (2026-06-07).** Viewer privilege tier-up notification (gallery lit-up, sub-perk advances). Carries TikTok CDN background frame URLs so overlays can render the banner without a separate fetch.
+
+```json
+{
+  "event": "privilegeAdvance",
+  "data": {
+    "type": "privilegeAdvance",
+    "privilegeKey": "gallery_all_lit_up_d",
+    "action": "gift_broadcast_msg",
+    "bgUrls": [
+      "https://p16-webcast.tiktokcdn.com/...",
+      "https://p16-webcast.tiktokcdn.com/...",
+      "https://p16-webcast.tiktokcdn.com/..."
+    ],
+    "protoVersion": 3
+  }
+}
+```
+
+---
+
+### commentTray
+
+**v3 (2026-06-07).** Comment tray UI state change.
+
+```json
+{
+  "event": "commentTray",
+  "data": {
+    "type": "commentTray",
+    "trayCount": 3978,
+    "updatedAtMs": 1780798747613,
+    "relatedMsgId": "7648470148944628496",
+    "protoVersion": 3
+  }
+}
+```
+
+---
+
+### linkLayer
+
+**v3 (2026-06-07).** PK / link-mic negotiation event (invite, cancel, accept, source change). Fires throughout the PK lifecycle alongside `battle`.
+
+```json
+{
+  "event": "linkLayer",
+  "data": {
+    "type": "linkLayer",
+    "action": 11,
+    "subAction": 4,
+    "sourceType": "SOURCE_TYPE_FRIEND_LIST",
+    "targetUserId": "7648408274391419681",
+    "protoVersion": 3
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `action` | number | Top-level action code (11 = invite, ...). |
+| `subAction` | number | Sub-action code. |
+| `sourceType` | string\|undefined | Where the link originated. Examples: `"inviteCancel_new_arc"`, `"SOURCE_TYPE_FRIEND_LIST"`. |
+| `targetUserId` | string\|undefined | User id of the link target. |
+| `protoVersion` | number | Always 3. |
+
+---
+
+### link
+
+**v3 (2026-06-07).** Generic link-mic envelope (lower-level than `linkMicMethod` / `linkMicLayoutState`).
+
+```json
+{
+  "event": "link",
+  "data": {
+    "type": "link",
+    "action": 20,
+    "subAction": 4,
+    "relatedUser": { "uniqueId": "cristina_ailerua" },
+    "protoVersion": 3
+  }
+}
+```
+
+---
+
+### giftPanelUpdate
+
+**v3 (2026-06-07).** Real-time gift catalog change for the room. Use as a cache-bust signal for local `/webcast/gift_info` copies - no need to re-fetch on every frame.
+
+```json
+{
+  "event": "giftPanelUpdate",
+  "data": {
+    "type": "giftPanelUpdate",
+    "panelId": "7648436315382123281",
+    "updatedAtSec": 1780798748,
+    "protoVersion": 3
+  }
+}
+```
+
+<Note>
+`updatedAtSec` is epoch **seconds**, not ms.
+</Note>
+
+---
+
+### gameServerFeature
+
+**v3 (2026-06-07).** TikTok Gaming live integration descriptor (e.g. "106 Roblox", "2348 Marvel Rivals").
+
+```json
+{
+  "event": "gameServerFeature",
+  "data": {
+    "type": "gameServerFeature",
+    "rawTag": "106Roblox",
+    "protoVersion": 3
+  }
+}
+```
+
+---
+
+### anchorToolModification
+
+**v3 (2026-06-07).** Creator modified a panel/widget on their stream (added a video anchor, changed Q&A topic, etc.).
+
+```json
+{
+  "event": "anchorToolModification",
+  "data": {
+    "type": "anchorToolModification",
+    "toolPayload": "video_anchor 7392706231896379905",
+    "protoVersion": 3
+  }
+}
+```
+
+---
+
+### shareRevenueNotice
+
+**v3 (2026-06-07).** Share-revenue subscriber count change notice.
+
+```json
+{
+  "event": "shareRevenueNotice",
+  "data": {
+    "type": "shareRevenueNotice",
+    "creatorUserId": "7648373500877261590",
+    "protoVersion": 3
+  }
+}
+```
+
+---
+
+### viewerPicksUpdate
+
+**v3 (2026-06-07).** "Viewer picks" - TikTok-promoted gift highlights shown to viewers as quick picks.
+
+```json
+{
+  "event": "viewerPicksUpdate",
+  "data": {
+    "type": "viewerPicksUpdate",
+    "pickType": 2,
+    "payload": "Kiss 5655, Bullet 7934",
+    "protoVersion": 3
+  }
+}
+```
+
+---
+
+### fanTicket
+
+**v3 (2026-06-07).** Fan-club ticket flow event.
+
+```json
+{
+  "event": "fanTicket",
+  "data": {
+    "type": "fanTicket",
+    "rawPayload": "mg_default ...",
+    "protoVersion": 3
+  }
+}
+```
+
+---
+
 ### follow
 
 A viewer follows the streamer.
@@ -272,6 +548,9 @@ PK lifecycle - fires when a battle (Link Mic PK) starts, changes status, or ends
 | `battleId` | string | Unique battle ID |
 | `status` | number | 1 = ACTIVE, 2 = STARTING, 3 = ENDED, 4 = PREPARING |
 | `battleDuration` | number | Total battle duration in seconds (typically 300) |
+| `extraHostUserIds` | string[]\|undefined | **v3 (2026-06-07)**: additional host user IDs surfaced on multi-guest battles (host pairs beyond the primary two). |
+| `layoutSubtype` | string\|undefined | **v3 (2026-06-07)**: TikTok layout subtype (`"cohost_normal_expand_2"`, ...) - overlays use this to pick the right PK frame template. |
+| `protoVersion` | number\|undefined | **v3 (2026-06-07)**: 3 when v3-only fields are present, otherwise 2. |
 
 ---
 
@@ -329,6 +608,8 @@ Periodic score update during a PK with **per-host MVP breakdown**.
 | `contributors[].userId` | string | Gifter's TikTok userId |
 | `contributors[].score` | number | Diamonds contributed |
 | `contributors[].nickname` | string | Gifter's display name |
+| `transactionId` | string\|undefined | **v3 (2026-06-07)**: stable per-frame transaction UUID (hex). Use as a dedup key to avoid double-counting score updates when upstream retries a frame. |
+| `protoVersion` | number\|undefined | **v3 (2026-06-07)**: 3 when `transactionId` is present, otherwise 2. |
 
 <Note>
 `hosts[0].contributors[0]` is always the **MVP** (highest gifter on that side).
@@ -520,8 +801,8 @@ Many event payloads carry an optional `protoVersion` field. It is the schema rev
 |---|---|---|
 | `1` | initial release | Original parser shape. Kept for legacy clients pinned to v1 typings. |
 | `2` | 2026-05-19 | Multi-host PK breakdown on `battleArmies` (`hosts[].contributors[]`), `payGrade` surfacing on every user-bearing event, `matchId` / `sessionId` / `secsRemaining` on PK frames. |
-| `3` | 2026-06-07 | TikTok native captions on the WS (new `caption` event), per-chat `language` + `messageUuid`, per-gift `transactionId` + `senderUserId` + `relationship`, member `entrySource` / `entryAction` / `entryType` (creator-analytics signals). |
+| `3` | 2026-06-07 | TikTok native captions on the WS (new `caption` event), per-chat `language` + `messageUuid`, per-gift `transactionId` + `senderUserId` + `relationship`, member `entrySource` / `entryAction` / `entryType` (creator-analytics signals), 13 brand-new event types (`linkMicOpponentGift`, `imDelete`, `goalUpdate`, `privilegeAdvance`, `commentTray`, `linkLayer`, `link`, `giftPanelUpdate`, `gameServerFeature`, `anchorToolModification`, `shareRevenueNotice`, `viewerPicksUpdate`, `fanTicket`), battle `extraHostUserIds` + `layoutSubtype`, battleArmies `transactionId` dedup. |
 
 `protoVersion` is **only** emitted on events that actually carry v3-additive fields - if a chat message has no language tag and no UUID, `protoVersion` is `2`. Clients written against the v1 or v2 schema can keep ignoring the field; clients that want the new data can read `if (evt.protoVersion === 3) { ... }` without any feature-detection.
 
-The full v3 discovery spec - every method observed across 1739 concurrent rooms / 304325 frames, every field tag, every wire type, every sample value - is maintained internally; the table above covers what is publicly surfaced via the relay parser. Additional event types (`linkMicOpponentGifts`, `imDelete`, `goalUpdate`, ...) ship in subsequent rollouts and will appear here as they land.
+The full v3 discovery spec was built from a 10-minute capture across 1739 concurrent TikTok LIVE rooms (304325 frames decoded across 67 distinct method names). Every event documented above ships as of the v3 rollout. Lower-volume rare-method discoveries (~37 additional types observed under 500 frames each) are tracked internally and will land in subsequent point releases as we gather enough sample diversity to model their full field set safely.
