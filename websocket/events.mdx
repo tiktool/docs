@@ -43,6 +43,9 @@ A viewer sends a chat message.
 | `user.isModerator` | boolean | Whether user is a moderator |
 | `user.isSubscriber` | boolean | Whether user is a subscriber |
 | `emotes` | array | Custom emotes used in the message |
+| `language` | string\|undefined | **v3 (2026-06-07)**: ISO 639-1 language code TikTok auto-detected for this comment ("en", "tr", "un" = unknown). |
+| `messageUuid` | string\|undefined | **v3 (2026-06-07)**: stable per-message UUID. Used by the upcoming `imDelete` moderation event to correlate "this chat got deleted" back to the original line. |
+| `protoVersion` | number\|undefined | **v3 (2026-06-07)**: 3 when this event carries v3-only fields, otherwise 2. See [Schema Versions](#schema-versions) below. |
 
 ---
 
@@ -80,6 +83,10 @@ A viewer sends a virtual gift.
 | `repeatEnd` | boolean | `true` when the gift streak ends (final count) |
 | `giftType` | number | 1 = repeatable, 2 = non-repeatable |
 | `giftPictureUrl` | string | URL of the gift image |
+| `transactionId` | string\|undefined | **v3 (2026-06-07)**: stable per-gift transaction UUID (hex). Dedup key across upstream retries - the same combo always carries the same `transactionId` even when `repeatCount` updates twice. |
+| `senderUserId` | string\|undefined | **v3 (2026-06-07)**: explicit sender id parsed from the `{"sender_id":"..."}` envelope. Mirrors `user.id` but delivered separately on the wire so it remains available on truncated frames. |
+| `relationship` | object\|undefined | **v3 (2026-06-07)**: relationship metadata when TikTok attaches it. Shape: `{ joinDayNumber, fromUser, toUser }`. `joinDayNumber` = days the gifter has been following the creator. Use for "Day 131 fan sent X" overlays. |
+| `protoVersion` | number\|undefined | **v3 (2026-06-07)**: 3 when v3-only fields are present, otherwise 2. |
 
 <Note>
 For streak gifts (`giftType: 1`), wait for `repeatEnd: true` to get the final count. Intermediate events show the running count.
@@ -120,10 +127,53 @@ A viewer joins the live stream.
   "data": {
     "type": "member",
     "user": { "uniqueId": "new_viewer", "nickname": "New Viewer" },
-    "actionId": 1
+    "actionId": 1,
+    "actionCode": 38,
+    "entrySource": "homepage_hot-live_cell",
+    "entryAction": "draw",
+    "entryType": "rec",
+    "protoVersion": 3
   }
 }
 ```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `user` | object | The viewer who joined |
+| `actionId` | number | Legacy action id (1 = join). Kept for backwards compat with v1/v2 clients. |
+| `actionCode` | number\|undefined | **v3 (2026-06-07)**: granular numeric subcode (38, 44, ...). Finer-grained than `actionId`. |
+| `entrySource` | string\|undefined | **v3 (2026-06-07)**: where the viewer came from. Examples: `"homepage_hot-live_cell"` (Discover hot row), `"follow-tab"`, `"share-link"`. Critical creator-analytics signal - shows what surface drives a creator's viewer base. |
+| `entryAction` | string\|undefined | **v3 (2026-06-07)**: how the viewer entered. `"draw"` = TikTok algorithmically pulled the viewer in. `"click"` = explicit click (search / follow). `"other"` = uncategorised. |
+| `entryType` | string\|undefined | **v3 (2026-06-07)**: `"rec"` when TikTok recommended this stream. Absent on direct joins. |
+| `protoVersion` | number\|undefined | **v3 (2026-06-07)**: 3 when v3-only fields are present, otherwise 2. |
+
+---
+
+### caption
+
+**v3 (2026-06-07).** TikTok native auto-captions on the LIVE WebSocket. Each frame carries one caption window with text + start/end timestamps + `isFinal` flag. This is what TikTok's own viewer UI renders for accessibility and the Discover feed; it is independent of the operator-managed TikTok Live Captions product.
+
+```json
+{
+  "event": "caption",
+  "data": {
+    "type": "caption",
+    "text": "Hello everyone welcome to the stream",
+    "isFinal": true,
+    "startedAtMs": 1780798747292,
+    "endsAtMs": 1780798748292,
+    "protoVersion": 3
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `text` | string | Caption text (utf-8). Partial windows arrive while the speaker talks; the final window for the same segment has `isFinal: true`. |
+| `isFinal` | boolean | `true` on the segment-final caption, `false` on partial / streaming updates. |
+| `startedAtMs` | number | Caption window start (ms epoch on TikTok server clock). |
+| `endsAtMs` | number | Caption window end (ms epoch). |
+| `protoVersion` | number | Always 3 - this event was added in the v3 schema. |
 
 ---
 
@@ -459,3 +509,19 @@ Most events include a `user` object with this structure:
 | `isSubscriber` | boolean | Whether user is a subscriber |
 | `topGifterRank` | number\|null | Rank in top gifter leaderboard |
 | `payGrade` | number\|undefined | TikTok donator level (1 to 50). Present on every user-bearing event when the user has gifted at least once on TikTok. Absent when they have never gifted. Alias of the wire field `level`. |
+
+---
+
+## Schema Versions
+
+Many event payloads carry an optional `protoVersion` field. It is the schema revision the relay parser decoded the event against, allowing v1 and v2 clients to coexist with v3 producers.
+
+| Version | First seen | What it means |
+|---|---|---|
+| `1` | initial release | Original parser shape. Kept for legacy clients pinned to v1 typings. |
+| `2` | 2026-05-19 | Multi-host PK breakdown on `battleArmies` (`hosts[].contributors[]`), `payGrade` surfacing on every user-bearing event, `matchId` / `sessionId` / `secsRemaining` on PK frames. |
+| `3` | 2026-06-07 | TikTok native captions on the WS (new `caption` event), per-chat `language` + `messageUuid`, per-gift `transactionId` + `senderUserId` + `relationship`, member `entrySource` / `entryAction` / `entryType` (creator-analytics signals). |
+
+`protoVersion` is **only** emitted on events that actually carry v3-additive fields - if a chat message has no language tag and no UUID, `protoVersion` is `2`. Clients written against the v1 or v2 schema can keep ignoring the field; clients that want the new data can read `if (evt.protoVersion === 3) { ... }` without any feature-detection.
+
+The full v3 discovery spec - every method observed across 1739 concurrent rooms / 304325 frames, every field tag, every wire type, every sample value - is maintained internally; the table above covers what is publicly surfaced via the relay parser. Additional event types (`linkMicOpponentGifts`, `imDelete`, `goalUpdate`, ...) ship in subsequent rollouts and will appear here as they land.
