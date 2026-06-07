@@ -737,6 +737,222 @@ Guest showdown lifecycle (showdown intro / round flip).
 
 ---
 
+## v3 Tier 5 events (long tail)
+
+Modeled from `<20`-frame samples across the 10-min + 30-min capture runs. Field shapes carry less confidence than Tier 1-4; future captures may refine semantics. Each carries `protoVersion: 3`.
+
+### hotRoom
+
+TikTok promoted the room to a high-traffic slot. The `hotKey` carries the surface descriptor (e.g. `"revenue_high_traffic"`).
+
+```json
+{ "event": "hotRoom", "data": { "type": "hotRoom", "hotKey": "revenue_high_traffic", "protoVersion": 3 } }
+```
+
+---
+
+### envelopePortal
+
+Red-envelope portal advance (multi-room envelope chain).
+
+```json
+{ "event": "envelopePortal", "data": { "type": "envelopePortal", "sessionInfo": "...", "status": 2, "kind": 2, "level": 2, "protoVersion": 3 } }
+```
+
+---
+
+### groupLiveMemberNotify
+
+Group-live member join / leave notify.
+
+```json
+{ "event": "groupLiveMemberNotify", "data": { "type": "groupLiveMemberNotify", "userId": "7467181997212075026", "nickname": "Kris", "protoVersion": 3 } }
+```
+
+---
+
+### shortTouch
+
+Short-touch UI state change (poll, ecommerce lucky bag, custom UI element).
+
+```json
+{ "event": "shortTouch", "data": { "type": "shortTouch", "variant": "CustomPoll", "action": "shortTouchCustomPoll", "refId": "7648483782558993174", "protoVersion": 3 } }
+```
+
+---
+
+### linkMicAnchorGuide
+
+Anchor (creator) guide nudges (TikTok prompts the host with a tip).
+
+```json
+{ "event": "linkMicAnchorGuide", "data": { "type": "linkMicAnchorGuide", "guideCode": 7, "rawPayload": "...", "protoVersion": 3 } }
+```
+
+---
+
+### gameMoment
+
+PK / mini-game moment window (highlight clip start / end).
+
+```json
+{ "event": "gameMoment", "data": { "type": "gameMoment", "momentType": 3, "startedAtMs": 1780803292414, "endsAtMs": 1780803297414, "momentMsgId": "7648491877775774737", "protoVersion": 3 } }
+```
+
+---
+
+### competitionContributor
+
+Per-contributor breakdown inside a cross-stream competition.
+
+```json
+{ "event": "competitionContributor", "data": { "type": "competitionContributor", "competitionType": 3, "contributorUserId": "7648483205057776397", "receiverUserId": "7648489576457587469", "protoVersion": 3 } }
+```
+
+---
+
+### pictionaryUpdate
+
+Drawing-game (Pictionary) round update.
+
+```json
+{ "event": "pictionaryUpdate", "data": { "type": "pictionaryUpdate", "status": 2, "pictionaryId": "7648487101176056583", "protoVersion": 3 } }
+```
+
+---
+
+### pictionaryEnd
+
+Drawing-game round end with revealed answer.
+
+```json
+{ "event": "pictionaryEnd", "data": { "type": "pictionaryEnd", "pictionaryId": "7648487101176056583", "answer": "dog", "status": 2, "protoVersion": 3 } }
+```
+
+---
+
+### pictionaryExit
+
+Drawing-game exit (early quit).
+
+```json
+{ "event": "pictionaryExit", "data": { "type": "pictionaryExit", "pictionaryId": "7648483515134167815", "exitReason": 1, "protoVersion": 3 } }
+```
+
+---
+
+### oecLiveManager
+
+OEC live-manager event (manager assigned / unassigned).
+
+```json
+{ "event": "oecLiveManager", "data": { "type": "oecLiveManager", "status": 2, "managerNickname": "Luna Volare", "protoVersion": 3 } }
+```
+
+---
+
+### oecLiveBillboard
+
+OEC live billboard slot (product wall snapshot).
+
+```json
+{ "event": "oecLiveBillboard", "data": { "type": "oecLiveBillboard", "status": 2, "slotCount": 5, "updatedAtMs": 1780802349750, "productPayload": "...", "flagsPayload": ["is_new0", "is_auto_display0"], "protoVersion": 3 } }
+```
+
+---
+
+### perception
+
+Perception event (mute cancel etc - TikTok hint signal sent to the room).
+
+```json
+{ "event": "perception", "data": { "type": "perception", "perceptionCode": 8, "action": "muting_cancel7648486963015877389", "protoVersion": 3 } }
+```
+
+---
+
+### questionSelected
+
+Host picked a viewer-submitted question.
+
+```json
+{ "event": "questionSelected", "data": { "type": "questionSelected", "questionText": "Quel est ton acteur ou ton actrice preferee?", "protoVersion": 3 } }
+```
+
+---
+
+### questionSlideDown
+
+Selected-question card slid down (UI dismiss).
+
+```json
+{ "event": "questionSlideDown", "data": { "type": "questionSlideDown", "questionId": "7648490528341835796", "protoVersion": 3 } }
+```
+
+---
+
+### giftUnlock
+
+Gift-unlock reveal (host unlocked a gated gift; viewer hint shown).
+
+```json
+{ "event": "giftUnlock", "data": { "type": "giftUnlock", "iconUrl": "https://p16-webcast.tiktokcdn.com/...", "tooltipKey": "ttlive_commGift_postReveal_tooltip", "protoVersion": 3 } }
+```
+
+---
+
+### ecShortItemRefresh
+
+Short-touch ecommerce item refresh (lucky bag drop refreshed).
+
+```json
+{ "event": "ecShortItemRefresh", "data": { "type": "ecShortItemRefresh", "refreshToken": "shortTouchEcommerceLuckyBag7648485714367643661", "protoVersion": 3 } }
+```
+
+---
+
+### capsule
+
+Capsule overlay (TikTok service-plus pin reminder for high-intention viewers).
+
+```json
+{
+  "event": "capsule",
+  "data": {
+    "type": "capsule",
+    "imageUrl": "https://...",
+    "titleKey": "ttlive_servicePlus_live_modPinCapsule",
+    "btnKey": "ttlive_servicePlus_live_modPinCapsule_btnPin",
+    "deepLink": "sslocal://webcast_subscribe/allinone?sec_anchor_id=...",
+    "reminderKey": "high_intention_comment_pincard_reminder",
+    "displayDurationSec": 90,
+    "protoVersion": 3
+  }
+}
+```
+
+---
+
+### roomVerify
+
+Room age / content-classification verification event.
+
+```json
+{ "event": "roomVerify", "data": { "type": "roomVerify", "verifyCode": 3, "protoVersion": 3 } }
+```
+
+---
+
+### smbBoard
+
+SMB (small-business) board overlay.
+
+```json
+{ "event": "smbBoard", "data": { "type": "smbBoard", "boardPayload": "...", "status": 1, "protoVersion": 3 } }
+```
+
+---
+
 ### follow
 
 A viewer follows the streamer.
@@ -1085,7 +1301,7 @@ Many event payloads carry an optional `protoVersion` field. It is the schema rev
 |---|---|---|
 | `1` | initial release | Original parser shape. Kept for legacy clients pinned to v1 typings. |
 | `2` | 2026-05-19 | Multi-host PK breakdown on `battleArmies` (`hosts[].contributors[]`), `payGrade` surfacing on every user-bearing event, `matchId` / `sessionId` / `secsRemaining` on PK frames. |
-| `3` | 2026-06-07 | TikTok native captions on the WS (new `caption` event), per-chat `language` + `messageUuid`, per-gift `transactionId` + `senderUserId` + `relationship`, member `entrySource` / `entryAction` / `entryType` (creator-analytics signals), 34 brand-new event types across Tier 1 / Tier 2 / Tier 3 / Tier 4 rollouts (`linkMicOpponentGift`, `imDelete`, `goalUpdate`, `privilegeAdvance`, `commentTray`, `linkLayer`, `link`, `giftPanelUpdate`, `gameServerFeature`, `anchorToolModification`, `shareRevenueNotice`, `viewerPicksUpdate`, `fanTicket`, `giftDynamicRestriction`, `inRoomBanner`, `battlePunishFinish`, `battleNotice`, `hostBoard`, `poll`, `competition`, `streamStatus`, `battleGameplay`, `aiSummary`, `giftGallery`, `cohostLayoutUpdate`, `fansEvent`, `linkScreenChange`, `roomSticker`, `bottomMessage`, `oecLiveShopping`, `rankText`, `accessRecall`, `unauthorizedMember`, `guestShowdown`), battle `extraHostUserIds` + `layoutSubtype`, battleArmies `transactionId` dedup. |
+| `3` | 2026-06-07 | TikTok native captions on the WS (new `caption` event), per-chat `language` + `messageUuid`, per-gift `transactionId` + `senderUserId` + `relationship`, member `entrySource` / `entryAction` / `entryType` (creator-analytics signals), 54 brand-new event types across Tier 1 / Tier 2 / Tier 3 / Tier 4 / Tier 5 rollouts (`linkMicOpponentGift`, `imDelete`, `goalUpdate`, `privilegeAdvance`, `commentTray`, `linkLayer`, `link`, `giftPanelUpdate`, `gameServerFeature`, `anchorToolModification`, `shareRevenueNotice`, `viewerPicksUpdate`, `fanTicket`, `giftDynamicRestriction`, `inRoomBanner`, `battlePunishFinish`, `battleNotice`, `hostBoard`, `poll`, `competition`, `streamStatus`, `battleGameplay`, `aiSummary`, `giftGallery`, `cohostLayoutUpdate`, `fansEvent`, `linkScreenChange`, `roomSticker`, `bottomMessage`, `oecLiveShopping`, `rankText`, `accessRecall`, `unauthorizedMember`, `guestShowdown`, `hotRoom`, `envelopePortal`, `groupLiveMemberNotify`, `shortTouch`, `linkMicAnchorGuide`, `gameMoment`, `competitionContributor`, `pictionaryUpdate`, `pictionaryEnd`, `pictionaryExit`, `oecLiveManager`, `oecLiveBillboard`, `perception`, `questionSelected`, `questionSlideDown`, `giftUnlock`, `ecShortItemRefresh`, `capsule`, `roomVerify`, `smbBoard`), battle `extraHostUserIds` + `layoutSubtype`, battleArmies `transactionId` dedup. |
 
 `protoVersion` is **only** emitted on events that actually carry v3-additive fields - if a chat message has no language tag and no UUID, `protoVersion` is `2`. Clients written against the v1 or v2 schema can keep ignoring the field; clients that want the new data can read `if (evt.protoVersion === 3) { ... }` without any feature-detection.
 
