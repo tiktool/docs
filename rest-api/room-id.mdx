@@ -1,12 +1,12 @@
 ---
 noindex: true
 title: "Room ID"
-description: "Resolve a TikTok username to their current live room ID. The server resolves the unique_id to a room_id on your behalf — no client-side HTML scraping needed."
+description: "Resolve a TikTok username to their current live room ID. The server resolves the unique_id to a room_id on your behalf - no client-side HTML scraping needed."
 ---
 
 ## `POST` `/webcast/room_id`
 
-Resolve a TikTok username to their current live room ID. The server resolves the `unique_id` to a `room_id` on your behalf — no client-side HTML scraping needed.
+Resolve a TikTok username to their current live room ID. The server resolves the `unique_id` to a `room_id` on your behalf - no client-side HTML scraping needed.
 
 **How it works:** The server checks its cache first (30-minute TTL). For Pro/Ultra/Admin tiers, resolution uses a residential proxy for reliable results. For other tiers, the server attempts direct resolution (may fail from datacenter IPs).
 

@@ -65,7 +65,7 @@ token = res.json()['data']['token']
 ### Use the JWT in Frontend
 
 ```javascript
-// Client-side JavaScript — API key never exposed
+// Client-side JavaScript - API key never exposed
 const ws = new WebSocket(`wss://api.tik.tools?uniqueId=streamer1&jwtKey=${jwtToken}`);
 
 ws.onmessage = (event) => {

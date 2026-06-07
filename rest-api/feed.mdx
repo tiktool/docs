@@ -1,20 +1,20 @@
 ---
 noindex: true
 title: "Live Feed"
-description: "Discover currently live TikTok LIVE streams. Uses a two-step 'sign-and-return' pattern — the API returns a signed URL with headers and cookies that you fetch from YOUR own IP to get the actual TikTok "
+description: "Discover currently live TikTok LIVE streams. Uses a two-step 'sign-and-return' pattern - the API returns a signed URL with headers and cookies that you fetch from YOUR own IP to get the actual TikTok "
 ---
 
 ## `GET` `/webcast/feed`
 
-Discover currently live TikTok LIVE streams. Uses a two-step "sign-and-return" pattern — the API returns a signed URL with headers and cookies that you fetch from YOUR own IP to get the actual TikTok feed data.
+Discover currently live TikTok LIVE streams. Uses a two-step "sign-and-return" pattern - the API returns a signed URL with headers and cookies that you fetch from YOUR own IP to get the actual TikTok feed data.
 
 **Authentication:** Include your TikTok `session_id` cookie for personalized, populated results. Without it, results are anonymous and limited (~5 rooms).
 
-**Channels:** `87` = Recommended — the main "For You" infinite scroll feed, `86` = Suggested — sidebar host recommendations (shown while watching), `89` or `1111006` = Gaming, `42` = Following (requires session).
+**Channels:** `87` = Recommended - the main "For You" infinite scroll feed, `86` = Suggested - sidebar host recommendations (shown while watching), `89` or `1111006` = Gaming, `42` = Following (requires session).
 
 **Geo-targeting:** Feed results are determined by the **IP address** making the final TikTok fetch (Step 2), NOT by the region parameter. Since you fetch the signed URL from your own client, you'll see content relevant to your geographic location. The `region` param is passed to TikTok but has minimal effect on results.
 
-**Pagination:** The API automatically switches to TikTok's "load more" mode when you pass a `max_time` cursor. Fetch the signed URL → parse the TikTok JSON response → extract `data.extra.max_time` → pass it as `max_time` in your next call. Each page returns ~6-15 rooms; keep paginating for continuous discovery. The response also includes a `load_more_url` template — just replace `{MAX_TIME}` with the cursor.
+**Pagination:** The API automatically switches to TikTok's "load more" mode when you pass a `max_time` cursor. Fetch the signed URL → parse the TikTok JSON response → extract `data.extra.max_time` → pass it as `max_time` in your next call. Each page returns ~6-15 rooms; keep paginating for continuous discovery. The response also includes a `load_more_url` template - just replace `{MAX_TIME}` with the cursor.
 
 **Rate limits:** Pro: 100 calls/day. Ultra: 2,000 calls/day. Response includes `feed_remaining` and `feed_limit` fields.
 
@@ -28,7 +28,7 @@ This endpoint requires a **Basic** tier subscription or higher.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `session_id` | string | No | Your TikTok sessionid cookie — strongly recommended. Get from browser DevTools → Application → Cookies → tiktok.com. Without it, results are sparse. |
+| `session_id` | string | No | Your TikTok sessionid cookie - strongly recommended. Get from browser DevTools → Application → Cookies → tiktok.com. Without it, results are sparse. |
 | `channel_id` | string | No | Feed channel: 87 = Recommended "For You" (default), 86 = Suggested sidebar, 89 or 1111006 = Gaming, 42 = Following |
 | `count` | number | No | Rooms per page (default: 20, max: 50) |
 | `max_time` | string | No | Pagination cursor from previous TikTok response (data.extra.max_time). Omit or "0" for first page. |
@@ -98,7 +98,7 @@ const feed = await tikRes.json();
 for (const entry of feed.data) {
   const room = entry.data;
   console.log(`🔴 @${room.owner.display_id} (${room.owner.nickname})`);
-  console.log(`   "${room.title}" — ${room.user_count} viewers`);
+  console.log(`   "${room.title}" - ${room.user_count} viewers`);
 }
 
 // Step 4: Load more (pagination)
@@ -137,7 +137,7 @@ feed = tik_res.json()
 for entry in feed.get('data', []):
     room = entry['data']
     owner = room['owner']
-    print(f"🔴 @{owner['display_id']}: \"{room['title']}\" — {room['user_count']} viewers")
+    print(f"🔴 @{owner['display_id']}: \"{room['title']}\" - {room['user_count']} viewers")
 
 # Step 4: Pagination
 cursor = feed.get('extra', {}).get('max_time')
@@ -207,7 +207,7 @@ var json = await client.GetStringAsync(
 
 ## `POST` `/webcast/feed`
 
-**Server-side feed fetch** — the server fetches TikTok's feed through its proxy and returns decoded room data directly. No two-step process needed. Ideal for clients in geo-restricted regions or server-to-server integrations.
+**Server-side feed fetch** - the server fetches TikTok's feed through its proxy and returns decoded room data directly. No two-step process needed. Ideal for clients in geo-restricted regions or server-to-server integrations.
 
 <Note>
 This endpoint requires a **Pro** tier subscription or higher. Uses your daily feed quota (Pro: 100/day, Ultra: 2,000/day).
@@ -259,7 +259,7 @@ This endpoint requires a **Pro** tier subscription or higher. Uses your daily fe
 
 <CodeGroup>
 ````javascript Node.js
-// Server-side fetch — no two-step process needed
+// Server-side fetch - no two-step process needed
 const res = await fetch('https://api.tik.tools/webcast/feed?apiKey=YOUR_KEY', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
@@ -273,7 +273,7 @@ const res = await fetch('https://api.tik.tools/webcast/feed?apiKey=YOUR_KEY', {
 const { rooms, cursor, has_more, feed_remaining } = await res.json();
 
 for (const room of rooms) {
-  console.log(`🔴 @${room.owner.unique_id}: "${room.title}" — ${room.user_count} viewers`);
+  console.log(`🔴 @${room.owner.unique_id}: "${room.title}" - ${room.user_count} viewers`);
 }
 
 // Pagination
@@ -291,7 +291,7 @@ if (has_more && cursor) {
 ```python Python
 import requests
 
-# Server-side fetch — single request, decoded response
+# Server-side fetch - single request, decoded response
 res = requests.post('https://api.tik.tools/webcast/feed',
     params={'apiKey': 'YOUR_KEY'},
     json={
@@ -304,7 +304,7 @@ res = requests.post('https://api.tik.tools/webcast/feed',
 data = res.json()
 
 for room in data.get('rooms', []):
-    print(f"🔴 @{room['owner']['unique_id']}: \"{room['title']}\" — {room['user_count']} viewers")
+    print(f"🔴 @{room['owner']['unique_id']}: \"{room['title']}\" - {room['user_count']} viewers")
 
 # Pagination
 if data.get('has_more') and data.get('cursor'):
