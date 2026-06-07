@@ -37,10 +37,10 @@ When you exceed your rate limit, the API returns HTTP `429 Too Many Requests`:
 
 ### Best Practices
 
-1. **Check headers** — Monitor `X-RateLimit-Remaining` to avoid hitting limits
-2. **Implement backoff** — Use exponential backoff when receiving 429 responses
-3. **Cache results** — Cache `check_alive` and `room_info` responses when polling
-4. **Use WebSocket** — For real-time data, WebSocket is more efficient than polling REST
+1. **Check headers** - Monitor `X-RateLimit-Remaining` to avoid hitting limits
+2. **Implement backoff** - Use exponential backoff when receiving 429 responses
+3. **Cache results** - Cache `check_alive` and `room_info` responses when polling
+4. **Use WebSocket** - For real-time data, WebSocket is more efficient than polling REST
 
 ## Check Your Limits
 

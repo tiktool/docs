@@ -1,14 +1,14 @@
 ---
 noindex: true
 title: "Rankings"
-description: "Get real-time leaderboard data for a live room — top gifters, online audience rankings, and engagement scores. Uses the 'sign-and-return' pattern for authenticated data."
+description: "Get real-time leaderboard data for a live room - top gifters, online audience rankings, and engagement scores. Uses the 'sign-and-return' pattern for authenticated data."
 ---
 
 ## `GET` `/webcast/rankings`
 
-Get real-time leaderboard data for a live room — top gifters, online audience rankings, and engagement scores. Uses the "sign-and-return" pattern for authenticated data.
+Get real-time leaderboard data for a live room - top gifters, online audience rankings, and engagement scores. Uses the "sign-and-return" pattern for authenticated data.
 
-**Data available:** In-room top gifters (`online_audience` — ranked by diamonds sent this session), all-time gifter leaderboard (`anchor_rank_list`), and entrance configuration (ranking tabs, timer info, class/league badges).
+**Data available:** In-room top gifters (`online_audience` - ranked by diamonds sent this session), all-time gifter leaderboard (`anchor_rank_list`), and entrance configuration (ranking tabs, timer info, class/league badges).
 
 **Authentication:** For full leaderboard data, include your TikTok session cookies via `x-cookie-header`. Without authentication, the endpoint returns limited ranking data.
 

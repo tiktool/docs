@@ -1,7 +1,7 @@
 ---
 noindex: true
 title: "Node.js SDK"
-description: "Official TikTool Node.js SDK — connect to any TikTok Live stream with a simple, event-driven API."
+description: "Official TikTool Node.js SDK - connect to any TikTok Live stream with a simple, event-driven API."
 ---
 
 ## Installation
@@ -32,8 +32,8 @@ await client.connect();
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `apiKey` | string | — | Your TikTool API key |
-| `uniqueId` | string | — | TikTok username to connect to |
+| `apiKey` | string | - | Your TikTool API key |
+| `uniqueId` | string | - | TikTok username to connect to |
 | `enableExtendedGiftInfo` | boolean | `false` | Fetch full gift details (image, diamond values) |
 | `requestPollingIntervalMs` | number | `1000` | Polling interval for HTTP mode |
 
@@ -59,7 +59,7 @@ client.on('questionNew', (event) => { /* Q&A question */ });
 client.on('roomPin', (event) => { /* starred / pinned message */ });
 ```
 
-### PK Battles — MVP + Boosters
+### PK Battles - MVP + Boosters
 
 ```javascript
 client.on('battleArmies', (e) => {

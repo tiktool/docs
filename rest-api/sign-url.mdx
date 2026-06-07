@@ -1,12 +1,12 @@
 ---
 noindex: true
 title: "Sign URL"
-description: "Sign any TikTok webcast URL with the required X-Bogus and X-Gnarly anti-bot parameters. This is the foundation of the API — TikTok rejects unsigned requests, so this endpoint adds the cryptographic si"
+description: "Sign any TikTok webcast URL with the required X-Bogus and X-Gnarly anti-bot parameters. This is the foundation of the API - TikTok rejects unsigned requests, so this endpoint adds the cryptographic si"
 ---
 
 ## `POST` `/webcast/sign_url`
 
-Sign any TikTok webcast URL with the required `X-Bogus` and `X-Gnarly` anti-bot parameters. This is the foundation of the API — TikTok rejects unsigned requests, so this endpoint adds the cryptographic signatures needed for valid requests.
+Sign any TikTok webcast URL with the required `X-Bogus` and `X-Gnarly` anti-bot parameters. This is the foundation of the API - TikTok rejects unsigned requests, so this endpoint adds the cryptographic signatures needed for valid requests.
 
 **How it works:** Send any raw TikTok webcast URL in the request body. The API returns the signed URL with all required parameters appended, plus the `User-Agent` and cookies you must use when fetching.
 
