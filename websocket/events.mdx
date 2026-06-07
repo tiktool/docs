@@ -443,7 +443,8 @@ Most events include a `user` object with this structure:
   "isModerator": false,
   "isSubscriber": false,
   "isNewGifter": false,
-  "topGifterRank": null
+  "topGifterRank": null,
+  "payGrade": 12
 }
 ```
 
@@ -457,3 +458,4 @@ Most events include a `user` object with this structure:
 | `isModerator` | boolean | Whether user is a room moderator |
 | `isSubscriber` | boolean | Whether user is a subscriber |
 | `topGifterRank` | number\|null | Rank in top gifter leaderboard |
+| `payGrade` | number\|undefined | TikTok donator level (1 to 50). Present on every user-bearing event when the user has gifted at least once on TikTok. Absent when they have never gifted. Alias of the wire field `level`. |
