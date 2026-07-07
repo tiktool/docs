@@ -183,6 +183,10 @@ A viewer joins the live stream.
 
 **v3.1 (2026-07-07).** Now carries `diamondCount` and `repeatCount`, making cross-room and out-of-room gifts fully itemizable from a single connection: price a combo frame as `diamondCount x (repeatCount delta)` keyed on `transactionId`.
 
+<Note>
+**Being phased out (2026-07-07).** TikTok has stopped emitting this standalone event for most rooms and instead embeds the triggering gift inline on `battleArmies` as `lastGift`. Consume both: prefer `battleArmies.lastGift` when present, fall back to this event.
+</Note>
+
 ```json
 {
   "event": "linkMicOpponentGift",
@@ -258,6 +262,71 @@ A viewer joins the live stream.
 | `creatorUserId` | string | User id of the creator running the goal. |
 | `contributionLevel` | number | Current contribution level (1..N). |
 | `metadataJson` | string | Raw JSON: `{ is_first_contribute, challenge_type, update_source, ... }`. |
+| `protoVersion` | number | Always 3. |
+
+---
+
+### countdownForAll
+
+**v3.2 (2026-07-07).** A timed "countdown for all" ranking round shown to every viewer - the gift-race / mission countdown used by game-mode PKs. Carries the round window and a live rank-ordered leaderboard of participants with their scores.
+
+```json
+{
+  "event": "countdownForAll",
+  "data": {
+    "type": "countdownForAll",
+    "startedAtMs": 1783449438672,
+    "endsAtMs": 1783449558841,
+    "durationSec": 120,
+    "participants": [
+      { "userId": "6968452437901788165", "score": 199, "rank": 1 },
+      { "userId": "7542969520541942806", "score": 199, "rank": 2 },
+      { "userId": "6742123907992273925", "score": 0, "rank": 3 }
+    ],
+    "protoVersion": 3
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `startedAtMs` | number | Round start (ms epoch). |
+| `endsAtMs` | number | Round end (ms epoch). |
+| `durationSec` | number | Round length in seconds. |
+| `participants[]` | array | Live standings, rank-ordered (rank 1 first). |
+| `participants[].userId` | string | Entrant's TikTok userId. |
+| `participants[].score` | number | Score so far (0 if none yet). |
+| `participants[].rank` | number | Current rank. |
+| `protoVersion` | number | Always 3. |
+
+---
+
+### competitionRankList
+
+**v3.2 (2026-07-07).** A competition / event ranking snapshot pushed to the room (seasonal events, hosted tournaments). Rank-ordered entries with score. Rare - a handful per hour across all rooms.
+
+```json
+{
+  "event": "competitionRankList",
+  "data": {
+    "type": "competitionRankList",
+    "competitionId": "7637443360546145300",
+    "entries": [
+      { "userId": "7650050378419242004", "rank": 1, "score": 3120 },
+      { "userId": "7615529915723416597", "rank": 2, "score": 2813 }
+    ],
+    "protoVersion": 3
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `competitionId` | string | Competition / event id. |
+| `entries[]` | array | Rank-ordered entries. |
+| `entries[].userId` | string | Entrant's TikTok userId. |
+| `entries[].rank` | number | Current rank. |
+| `entries[].score` | number | Score. |
 | `protoVersion` | number | Always 3. |
 
 ---
@@ -1115,10 +1184,16 @@ Periodic score update during a PK with **per-host MVP breakdown**.
 | `contributors[].score` | number | Diamonds contributed |
 | `contributors[].nickname` | string | Gifter's display name |
 | `transactionId` | string\|undefined | **v3 (2026-06-07)**: stable per-frame transaction UUID (hex). Use as a dedup key to avoid double-counting score updates when upstream retries a frame. |
+| `lastGift` | object\|undefined | **v3.2 (2026-07-07)**: the gift that triggered this score update, embedded inline: `{ gifterUserId, giftId, count, diamondCount, repeatCount, giftPictureUrl }`. The score frame is broadcast to BOTH PK rooms, so this itemizes cross-room and out-of-room gifts from a single connection - the same purpose as `linkMicOpponentGift`, on the frame that also carries the resulting score delta. Present ONLY on frames with an actual priced gift (absent on plain score ticks). `diamondCount` is the per-unit value and matches the gift catalog. Dedup a combo on `(transactionId, repeatCount)`. |
+| `battleGame` | object\|undefined | **v3.2 (2026-07-07)**: mini-game context `{ name, id }` for game-mode PKs (e.g. name `"ICE_SHOWDOWN"`). Absent on plain PKs. |
 | `protoVersion` | number\|undefined | **v3 (2026-06-07)**: 3 when `transactionId` is present, otherwise 2. |
 
 <Note>
 `hosts[0].contributors[0]` is always the **MVP** (highest gifter on that side).
+</Note>
+
+<Note>
+**Battle gift itemization (2026-07-07):** TikTok is phasing out the standalone `linkMicOpponentGift` event for many rooms and instead embeds the triggering gift here as `lastGift`. Consume both: prefer `battleArmies.lastGift` when present, fall back to `linkMicOpponentGift`.
 </Note>
 
 ---
