@@ -633,6 +633,27 @@ Stream status flip (recording state, content-classification rechecks).
 
 ---
 
+### streamEnd
+
+**v3.2 (2026-07-07).** The creator ended or restarted their live. Emitted once, immediately before the socket closes with code **4005 (STREAM_END)**. Previously a creator ending mid-session closed the socket with a bare **1006** that was indistinguishable from a network error - this event and the 4005 code make it unambiguous.
+
+```json
+{ "event": "streamEnd", "data": { "type": "streamEnd", "uniqueId": "sdmdq", "reason": "creator_offline", "reconnect": true, "closeCode": 4005 } }
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `uniqueId` | string | The creator whose stream ended. |
+| `reason` | string | Always `"creator_offline"` for now. |
+| `reconnect` | boolean | Always `true` - reconnect to pick up their next live (the server auto-resolves the new room). |
+| `closeCode` | number | The close code that follows this event: `4005`. |
+
+<Note>
+**Always auto-reconnect.** TikTok live connections drop constantly, most of all when a creator restarts a stream. A client with reconnect disabled will appear to "only work 1 in 3-4 times". Treat `1006`/`1005`/`1011` the same as `4005`: the stream is over, reconnect on your next preflight tick. The server resolves the creator's new room automatically.
+</Note>
+
+---
+
 ### battleGameplay
 
 PK mini-game gameplay state (Whack-A-Mole, Tic-Tac-Toe, etc.).
