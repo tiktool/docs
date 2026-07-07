@@ -181,6 +181,8 @@ A viewer joins the live stream.
 
 **v3 (2026-06-07).** Per-gift breakdown from the OPPONENT side of a PK. TikTok now ships every gift sent on the opposing host's stream as a separate frame, so PK dashboards no longer need to relay-tap the opponent's room separately.
 
+**v3.1 (2026-07-07).** Now carries `diamondCount` and `repeatCount`, making cross-room and out-of-room gifts fully itemizable from a single connection: price a combo frame as `diamondCount x (repeatCount delta)` keyed on `transactionId`.
+
 ```json
 {
   "event": "linkMicOpponentGift",
@@ -189,6 +191,8 @@ A viewer joins the live stream.
     "senderUserId": "7366557450243605522",
     "opponentRoomId": "7569885742970635284",
     "giftId": 5655,
+    "diamondCount": 1,
+    "repeatCount": 17,
     "giftPictureUrl": "https://...",
     "startedAtMs": 1780798748470,
     "endsAtMs": 1780798748589,
@@ -203,6 +207,8 @@ A viewer joins the live stream.
 | `senderUserId` | string | TikTok user id of the opponent-side gifter. |
 | `opponentRoomId` | string | Room id of the opposing host. |
 | `giftId` | number | Gift identifier (same id-space as the main `/webcast/gift_info` catalog). |
+| `diamondCount` | number | **v3.1**: per-unit diamond value of the gift. Constant per giftId and matches the catalog price. |
+| `repeatCount` | number | **v3.1**: running combo counter within a `transactionId`. Most combos never send a terminal frame - consume per-frame deltas, the same rule as `giftType: 1` combos on the main `gift` event. |
 | `giftPictureUrl` | string | Full TikTok CDN URL for the gift image. |
 | `startedAtMs` | number | Gift animation start (ms epoch). |
 | `endsAtMs` | number | Gift animation end (ms epoch). |
