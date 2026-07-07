@@ -1183,10 +1183,24 @@ Periodic score update during a PK with **per-host MVP breakdown**.
         "teamIdx": 1,
         "contributors": []
       }
-    ]
+    ],
+    "transactionId": "202607072219033A38D7B466DD66036089",
+    "lastGift": {
+      "gifterUserId": "6781226035679396870",
+      "giftId": 5655,
+      "count": 1,
+      "diamondCount": 1,
+      "repeatCount": 4,
+      "giftPictureUrl": "https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/..."
+    },
+    "battleGame": { "name": "ICE_SHOWDOWN", "id": "6551516166106447873" }
   }
 }
 ```
+
+<Note>
+`transactionId` is a **top-level** field on the `battleArmies` frame (a sibling of `lastGift`), not a field inside `lastGift`. Dedup a combo on the pair (`transactionId`, `lastGift.repeatCount`).
+</Note>
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -1205,7 +1219,7 @@ Periodic score update during a PK with **per-host MVP breakdown**.
 | `contributors[].score` | number | Diamonds contributed |
 | `contributors[].nickname` | string | Gifter's display name |
 | `transactionId` | string\|undefined | **v3 (2026-06-07)**: stable per-frame transaction UUID (hex). Use as a dedup key to avoid double-counting score updates when upstream retries a frame. |
-| `lastGift` | object\|undefined | **v3.2 (2026-07-07)**: the gift that triggered this score update, embedded inline: `{ gifterUserId, giftId, count, diamondCount, repeatCount, giftPictureUrl }`. The score frame is broadcast to BOTH PK rooms, so this itemizes cross-room and out-of-room gifts from a single connection - the same purpose as `linkMicOpponentGift`, on the frame that also carries the resulting score delta. Present ONLY on frames with an actual priced gift (absent on plain score ticks). `diamondCount` is the per-unit value and matches the gift catalog. Dedup a combo on `(transactionId, repeatCount)`. |
+| `lastGift` | object\|undefined | **v3.2 (2026-07-07)**: the gift that triggered this score update, embedded inline: `{ gifterUserId, giftId, count, diamondCount, repeatCount, giftPictureUrl }`. The score frame is broadcast to BOTH PK rooms, so this itemizes cross-room and out-of-room gifts from a single connection - the same purpose as `linkMicOpponentGift`, on the frame that also carries the resulting score delta. Present ONLY on frames with an actual priced gift (absent on plain score ticks). `diamondCount` is the per-unit value and matches the gift catalog. Dedup a combo on the pair (`transactionId`, `lastGift.repeatCount`) - `transactionId` is the top-level `battleArmies` field (a sibling of `lastGift`), **not** a field inside the `lastGift` object. |
 | `battleGame` | object\|undefined | **v3.2 (2026-07-07)**: mini-game context `{ name, id }` for game-mode PKs (e.g. name `"ICE_SHOWDOWN"`). Absent on plain PKs. |
 | `protoVersion` | number\|undefined | **v3 (2026-06-07)**: 3 when `transactionId` is present, otherwise 2. |
 
