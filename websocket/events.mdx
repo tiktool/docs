@@ -1041,11 +1041,17 @@ Room age / content-classification verification event.
 
 ### smbBoard
 
-SMB (small-business) board overlay.
+SMB (small/medium-business) board overlay - a styled sponsor/business panel rendered on the LIVE. Rare (~1/hr, host-triggered). The payload is a UI panel definition (3D text styling, colors, layout), not a data leaderboard.
 
 ```json
-{ "event": "smbBoard", "data": { "type": "smbBoard", "boardPayload": "...", "status": 1, "protoVersion": 3 } }
+{ "event": "smbBoard", "data": { "type": "smbBoard", "boardId": "7657756442560531213", "status": 1, "protoVersion": 3 } }
 ```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `boardId` | string | Board component id. |
+| `status` | number | Board status/type flag. |
+| `protoVersion` | number | Always 3. |
 
 ---
 
