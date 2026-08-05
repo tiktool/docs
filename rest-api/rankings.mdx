@@ -6,69 +6,53 @@ description: "Get real-time leaderboard data for a live room - top gifters, onli
 
 ## `GET` `/webcast/rankings`
 
-Get real-time leaderboard data for a live room - top gifters, online audience rankings, and engagement scores. Uses the "sign-and-return" pattern for authenticated data.
+Returns a signed request for a live room's gifter ranking (`ranklist/online_audience`) using the "sign-and-return" pattern: the response gives you a `signed_url` plus the exact headers to send, and you make the final request yourself.
 
-**Data available:** In-room top gifters (`online_audience` - ranked by diamonds sent this session), all-time gifter leaderboard (`anchor_rank_list`), and entrance configuration (ranking tabs, timer info, class/league badges).
+<Warning>
+**The live top-viewer / online-audience list is only reliably available over the WebSocket, not this REST route.**
 
-**Authentication:** For full leaderboard data, include your TikTok session cookies via `x-cookie-header`. Without authentication, the endpoint returns limited ranking data.
+TikTok now requires an authenticated, logged-in session for `online_audience`. As a result:
 
-**Response pattern:** Returns a `signed_url` that you fetch with session cookies to get TikTok's ranking data. Each rank entry includes `user` (nickname, avatar, follower count), `score` (diamonds), and `rank` position.
+- Fetching the `signed_url` with **no cookies** returns `status_code: 20003` ("User doesn't login").
+- Fetching it **with** your own TikTok session cookies returns `status_code: 10011` ("Request params error"), because your session does not match the signed request.
+
+There is no anonymous way to read `online_audience` at this time. For the live top-viewer list, use the WebSocket (see below).
+</Warning>
+
+### Getting the live top-viewer list (recommended)
+
+Connect to the live room over the [WebSocket](/websocket/events) and read the `roomUserSeq` event. Its `topViewers` array carries the in-room top viewers alongside the live `viewerCount`. This is the supported, real-time source and needs no extra signing or cookies.
+
+The `rankUpdate` event also carries ranked entries (`user`, `rank`, `score`), but TikTok only emits it for rooms that are currently running a ranking event (gifter battles, weekly/regional ranks). A room with no active ranking emits none - this is expected.
 
 ### Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `room_id` | string | No | TikTok room ID |
-| `unique_id` | string | No | TikTok username (alternative to room_id) |
+| `room_id` | string | No | TikTok room ID. Required to get a signed request. |
+| `unique_id` | string | No | TikTok username. If you pass this without `room_id`, the response is a `resolve_required` action telling you how to resolve the current `room_id` first. |
 
 ### Response
 
+With a `room_id`, the endpoint returns a signed request, not the ranking data itself:
+
 ```json
-{ "status_code": 0, "data": { "room_id": "...", "rankings": [...] } }
+{
+  "status_code": 0,
+  "signed_url": "https://webcast.tiktok.com/webcast/ranklist/online_audience/?...",
+  "method": "GET",
+  "headers": { "User-Agent": "...", "Referer": "https://www.tiktok.com/" }
+}
 ```
 
-### Examples
+You then make that request yourself. As noted in the warning above, TikTok currently returns `20003` / `10011` for `online_audience` regardless of whether cookies are attached, so use the WebSocket `roomUserSeq.topViewers` event for the live top-viewer list instead.
 
-<CodeGroup>
-```javascript Node.js
-const res = await fetch('https://api.tik.tools/webcast/rankings?unique_id=username&apiKey=YOUR_KEY');
-const { data } = await res.json();
-console.log(data.rankings);
-```
-
-```python Python
-import requests
-res = requests.get('https://api.tik.tools/webcast/rankings',
-    params={'unique_id': 'username', 'apiKey': 'YOUR_KEY'})
-print(res.json()['data']['rankings'])
-```
+### Example
 
 ```bash cURL
+# Step 1: resolve the current room_id (if you only have a username)
 curl "https://api.tik.tools/webcast/rankings?unique_id=username&apiKey=YOUR_KEY"
-```
 
-```java Java
-HttpClient client = HttpClient.newHttpClient();
-HttpRequest req = HttpRequest.newBuilder()
-    .uri(URI.create("https://api.tik.tools/webcast/rankings?unique_id=username&apiKey=YOUR_KEY"))
-    .GET().build();
-HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
-System.out.println(res.body());
+# Step 2: get the signed request for that room
+curl "https://api.tik.tools/webcast/rankings?room_id=ROOM_ID&apiKey=YOUR_KEY"
 ```
-
-```go Go
-resp, err := http.Get("https://api.tik.tools/webcast/rankings?unique_id=username&apiKey=YOUR_KEY")
-if err != nil { log.Fatal(err) }
-defer resp.Body.Close()
-body, _ := io.ReadAll(resp.Body)
-fmt.Println(string(body))
-```
-
-```csharp C#
-using var client = new HttpClient();
-var res = await client.GetStringAsync(
-    "https://api.tik.tools/webcast/rankings?unique_id=username&apiKey=YOUR_KEY");
-Console.WriteLine(res);
-```
-
-</CodeGroup>

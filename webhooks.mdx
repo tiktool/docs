@@ -1,0 +1,351 @@
+---
+noindex: true
+title: "Webhooks"
+description: "Receive live.start, live.end, peak viewers, high-value gifts, and follower milestone events at your HTTPS endpoint with HMAC-signed POST requests. Available on every paid plan."
+---
+
+## Overview
+
+TikTool can POST JSON events to your own HTTPS endpoint when a watched creator goes live, ends a stream, hits a viewer peak, receives a high-value gift, or crosses a follower milestone. Every delivery is HMAC-SHA256-signed, retried on failure, and replayable from the dashboard.
+
+<Note>
+Webhooks are available on **every paid plan** (Basic, Pro, Ultra, Agency). Webhook deliveries do **not** count against your API request quota.
+</Note>
+
+## Tier matrix
+
+| Capability | Basic | Pro | Ultra | Agency |
+|---|---|---|---|---|
+| Webhook targets | 1 | 3 | 5 | unlimited |
+| Daily deliveries | 500 | 5,000 | 50,000 | 500,000 |
+| `live.start` | ✓ | ✓ | ✓ | ✓ |
+| `live.end` | ✓ | ✓ | ✓ | ✓ |
+| `live.peak_viewers` | — | — | ✓ | ✓ |
+| `live.gift.high_value` (gifts ≥ 1000 diamonds) | — | — | ✓ | ✓ |
+| `creator.follower_milestone` | — | — | — | ✓ |
+| HMAC-SHA256 signing | ✓ | ✓ | ✓ | ✓ |
+| `event_id` idempotency | ✓ | ✓ | ✓ | ✓ |
+| Retries (6 attempts / 7h) | ✓ | ✓ | ✓ | ✓ |
+| Dashboard delivery log | 7 days | 7 days | 7 days | 7 days |
+| Analytical history | 30 days | 30 days | 30 days | 30 days |
+| Replay failed deliveries | ✓ | ✓ | ✓ | ✓ |
+| `Send test event` button | ✓ | ✓ | ✓ | ✓ |
+| Priority delivery queue | — | — | ✓ | ✓ |
+| Outbound IP allowlist | — | — | — | ✓ |
+
+## Create a webhook
+
+Webhooks are configured in the dashboard, not over the REST API. There is no `/webcast/webhooks` endpoint - the `/webcast/` host serves live-data calls only, so requests there return a 404 by design.
+
+Dashboard → **Webhooks** → **New webhook** (at [tik.tools/webhooks](https://tik.tools/webhooks))
+
+Fields:
+
+- **Target URL** — must be HTTPS. Cannot point to private networks.
+- **Events** — pick from the available types for your tier.
+- **Creators** — one handle per line, e.g. `charlidamelio`. Leave empty to receive events for **all** creators on your watchlist.
+- **Bearer token** (optional) — sent as `Authorization: Bearer <token>` alongside the HMAC signature.
+
+After creating, your **webhook secret** (format `whsec_<32-byte base64url>`) is shown **once**. Save it — it cannot be retrieved later. Use **Rotate secret** to generate a new one (invalidates the old immediately).
+
+## Request shape
+
+Every delivery is a `POST` with `Content-Type: application/json`.
+
+### Headers
+
+```
+Content-Type: application/json
+User-Agent: TikTool-Webhook/1.0 (+https://tik.tools/docs/webhooks)
+X-Tiktool-Signature: t=1780797772,v1=8bf2c8b0f5...
+X-Tiktool-Timestamp: 1780797772
+X-Tiktool-Event: live.start
+X-Tiktool-Event-Id: 01J9XZ4F3Y2W7K8N3P5Q6R7S8T
+X-Tiktool-Delivery-Id: 01J9XZ4F3Z6Q1R3T5V7W9X1Y3A
+X-Tiktool-Attempt: 1
+X-Tiktool-Webhook-Id: 5f4a6e3a-...-...
+```
+
+### Example body: `live.start`
+
+```json
+{
+  "event_id": "01J9XZ4F3Y2W7K8N3P5Q6R7S8T",
+  "event": "live.start",
+  "occurred_at": "2026-06-07T02:43:11.482Z",
+  "creator": {
+    "unique_id": "charlidamelio",
+    "nickname": "charli d'amelio",
+    "avatar_url": "https://...",
+    "user_id": "5831967",
+    "follower_count": 154200000
+  },
+  "live": {
+    "room_id": "7378500000000000000",
+    "started_at": "2026-06-07T02:42:58.000Z",
+    "live_url": "https://www.tiktok.com/@charlidamelio/live"
+  },
+  "_links": {
+    "creator": "https://tik.tools/@charlidamelio"
+  }
+}
+```
+
+### Example body: `live.end`
+
+```json
+{
+  "event_id": "01J9XZ5G8K3M5N7P9Q1R3S5T7V",
+  "event": "live.end",
+  "occurred_at": "2026-06-07T03:18:42.901Z",
+  "creator": {
+    "unique_id": "charlidamelio",
+    "nickname": "charli d'amelio",
+    "avatar_url": "https://...",
+    "user_id": "5831967",
+    "follower_count": 154200000
+  },
+  "live": {
+    "room_id": "7378500000000000000",
+    "started_at": "2026-06-07T02:42:58.000Z",
+    "ended_at": "2026-06-07T03:18:42.901Z",
+    "duration_seconds": 2144
+  },
+  "_links": {
+    "creator": "https://tik.tools/@charlidamelio"
+  }
+}
+```
+
+### Example body: `live.peak_viewers` (Ultra+)
+
+Fired once per stream session when concurrent viewer count crosses one of: 100, 500, 1K, 5K, 10K, 25K, 50K, 100K, 250K, 500K, 1M.
+
+```json
+{
+  "event_id": "01J9XZ6H4N5P7Q9R1S3T5V7W9X",
+  "event": "live.peak_viewers",
+  "occurred_at": "2026-06-07T02:51:03.221Z",
+  "creator": {
+    "unique_id": "charlidamelio",
+    "nickname": "charli d'amelio",
+    "avatar_url": "https://...",
+    "user_id": "5831967",
+    "follower_count": 154200000
+  },
+  "peak": {
+    "threshold": 100000,
+    "current_count": 103482,
+    "label": "100K concurrent viewers"
+  },
+  "_links": { "creator": "https://tik.tools/@charlidamelio" }
+}
+```
+
+### Example body: `live.gift.high_value` (Ultra+)
+
+Fired for every gift with diamond value ≥ 1000 received by a watched creator.
+
+```json
+{
+  "event_id": "01J9XZ6K2M5N7P9Q1R3S5T7V9W",
+  "event": "live.gift.high_value",
+  "occurred_at": "2026-06-07T02:57:12.108Z",
+  "creator": {
+    "unique_id": "charlidamelio",
+    "nickname": "charli d'amelio",
+    "avatar_url": "https://...",
+    "user_id": "5831967",
+    "follower_count": 154200000
+  },
+  "gift": {
+    "name": "TikTok Universe",
+    "image": "https://p16-webcast.tiktokcdn.com/img/...png",
+    "diamonds": 34999,
+    "gifter": {
+      "unique_id": "whaledonator99",
+      "display_name": "Whale Donator",
+      "avatar_url": "https://p16-sign-va.tiktokcdn.com/..."
+    }
+  },
+  "_links": { "creator": "https://tik.tools/@charlidamelio" }
+}
+```
+
+### Example body: `creator.follower_milestone` (Agency)
+
+Fired when a watched creator's follower count crosses one of: 1K, 5K, 10K, 25K, 50K, 100K, 250K, 500K, 1M, 2M, 5M, 10M, 50M, 100M.
+
+```json
+{
+  "event_id": "01J9XZ7Q4N5P7R9S1T3V5W7X9Y",
+  "event": "creator.follower_milestone",
+  "occurred_at": "2026-06-07T04:12:00.000Z",
+  "creator": {
+    "unique_id": "charlidamelio",
+    "nickname": "charli d'amelio",
+    "avatar_url": "https://...",
+    "user_id": "5831967",
+    "follower_count": 154200000
+  },
+  "milestone": {
+    "threshold": 100000000,
+    "previous_count": 99998421,
+    "current_count": 154200000,
+    "label": "100M followers"
+  },
+  "_links": { "creator": "https://tik.tools/@charlidamelio" }
+}
+```
+
+## Verifying the signature
+
+Always verify `X-Tiktool-Signature` before processing the payload. The header has the form `t=<unix_ts>,v1=<hex_hmac>`. Compute `HMAC-SHA256(your_secret, "<ts>.<raw_body>")` and constant-time-compare to `v1`.
+
+Reject any request where `|now - ts| > 300` seconds (replay protection).
+
+### Node / Bun
+
+```js
+import crypto from 'node:crypto'
+
+const SECRET = process.env.TIKTOOL_WEBHOOK_SECRET
+
+export async function POST(req) {
+  const raw = await req.text()
+  const sig = req.headers.get('x-tiktool-signature') || ''
+  const parts = Object.fromEntries(sig.split(',').map(p => p.split('=', 2)))
+  const ts = Number(parts.t)
+  const v1 = parts.v1
+
+  if (!ts || !v1) return new Response('bad signature', { status: 400 })
+  if (Math.abs(Math.floor(Date.now() / 1000) - ts) > 300) {
+    return new Response('stale', { status: 400 })
+  }
+
+  const expected = crypto.createHmac('sha256', SECRET).update(`${ts}.${raw}`).digest('hex')
+  if (!crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(v1))) {
+    return new Response('invalid signature', { status: 401 })
+  }
+
+  const event = JSON.parse(raw)
+  // event.event_id is stable across retries - use it as your idempotency key
+  // ...handle event
+  return new Response('ok')
+}
+```
+
+### Supabase Edge Function (Deno)
+
+```ts
+import { createHmac, timingSafeEqual } from 'node:crypto'
+
+Deno.serve(async (req) => {
+  const raw = await req.text()
+  const sig = req.headers.get('x-tiktool-signature') ?? ''
+  const t = Number(sig.match(/t=(\d+)/)?.[1])
+  const v1 = sig.match(/v1=([a-f0-9]+)/)?.[1]
+  if (!t || !v1) return new Response('bad sig', { status: 400 })
+
+  const secret = Deno.env.get('TIKTOOL_WEBHOOK_SECRET')!
+  const expected = createHmac('sha256', secret).update(`${t}.${raw}`).digest('hex')
+  if (!timingSafeEqual(Buffer.from(expected), Buffer.from(v1))) {
+    return new Response('invalid sig', { status: 401 })
+  }
+  if (Math.abs(Math.floor(Date.now() / 1000) - t) > 300) {
+    return new Response('stale', { status: 400 })
+  }
+
+  const evt = JSON.parse(raw)
+  // ...handle event
+  return new Response('ok')
+})
+```
+
+### Python (FastAPI)
+
+```python
+import hmac, hashlib, time
+from fastapi import FastAPI, Request, HTTPException
+
+app = FastAPI()
+SECRET = "whsec_..."
+
+@app.post("/tiktok-live")
+async def tiktok_live(req: Request):
+    raw = (await req.body()).decode()
+    sig = req.headers.get("x-tiktool-signature", "")
+    parts = dict(p.split("=", 1) for p in sig.split(","))
+    ts = int(parts.get("t", "0"))
+    v1 = parts.get("v1", "")
+    if not ts or not v1:
+        raise HTTPException(400, "bad signature")
+    if abs(int(time.time()) - ts) > 300:
+        raise HTTPException(400, "stale")
+    expected = hmac.new(SECRET.encode(), f"{ts}.{raw}".encode(), hashlib.sha256).hexdigest()
+    if not hmac.compare_digest(expected, v1):
+        raise HTTPException(401, "invalid signature")
+    evt = json.loads(raw)
+    # ...handle
+    return {"ok": True}
+```
+
+## Idempotency
+
+`event_id` is **stable across retries** of the same event. Use it as your idempotency key.
+
+`delivery_id` is **unique per attempt** (a retry of the same `event_id` gets a fresh `delivery_id`). Useful for tracing in our delivery log.
+
+If your endpoint processes an event successfully but fails to respond `2xx` (e.g. you crashed after the database insert), TikTool will retry, and the duplicate delivery will hit your endpoint again with the same `event_id`. Dedupe on it.
+
+## Retry policy
+
+If your endpoint returns anything other than a `2xx` status — or times out (connect timeout 10s, read timeout 15s) — TikTool retries on this schedule:
+
+```
+attempt 1: immediate
+attempt 2: +30 seconds
+attempt 3: +2 minutes
+attempt 4: +10 minutes
+attempt 5: +1 hour
+attempt 6: +6 hours
+```
+
+After **6 attempts** over ~7 hours, the event is marked **dead-letter**. You can replay any failed delivery manually from the dashboard for 7 days.
+
+If a webhook has **50 consecutive dead-letter events**, it is automatically disabled. We'll email you (and you'll see the disabled status on the dashboard). Re-enable from the dashboard once your endpoint is healthy.
+
+## Quotas
+
+Daily delivery quotas are tracked per user, per UTC day:
+
+- **Ultra:** 10,000 deliveries/day
+- **Agency:** 100,000 deliveries/day
+
+Deliveries that exceed the quota are dropped (not queued) and surfaced as `quota_exceeded` in your dashboard. Upgrade to raise the limit.
+
+## Best practices
+
+- **Respond fast.** Acknowledge with `200` within 5 seconds. Do heavy work async after responding.
+- **Idempotency key = `event_id`.** Always.
+- **Verify the signature.** No exceptions.
+- **Don't trust the timestamp from the payload alone** — use the `X-Tiktool-Timestamp` header inside HMAC verification to prevent replay attacks beyond the 5-minute window.
+- **Avoid 3xx redirects.** We do not follow redirects. Configure your endpoint as the final URL.
+- **Logs.** We retain raw request bodies for 30 days in ClickHouse — request a CSV export from support if you need an audit trail.
+
+## Sample receiver for testing
+
+Spin up a quick test receiver during development with [webhook.site](https://webhook.site) or run a local mock. We also expose **Send test event** from the dashboard which fires a synthetic `live.start` against your configured URL using your real secret.
+
+## Errors
+
+| Behavior | Reason |
+|---|---|
+| 401 from your endpoint | Check `X-Tiktool-Signature` verification logic |
+| Auto-disabled | 50 consecutive dead-letters; fix endpoint then re-enable |
+| `quota_exceeded` | Daily delivery cap reached; upgrade or wait for UTC midnight reset |
+| Missing `live.end` | Your endpoint must have been responsive within the 7-hour retry window |
+
+## Migration / coming-from-other-tools
+
+If you currently use Discord/Telegram alerts via TikTool, those continue to work alongside webhooks. The two channels are independent — adding a webhook does not affect existing alerts.
