@@ -10,7 +10,7 @@ Get live stream video playback URLs in multiple formats and quality levels. Retu
 
 **Stream formats:** `hls_pull_url` for adaptive bitrate (best for web players), `flv_pull_url` for low-latency playback, and `origin` URLs for the highest quality source stream. Multiple resolutions are available (SD, HD, FULL_HD).
 
-**Use cases:** Building custom live stream players, recording/archiving streams, feeding audio to transcription services (used internally by our Live Captions feature), or creating multi-stream monitoring walls.
+**Use cases:** Building custom live stream players, recording/archiving streams, feeding audio to transcription services, or creating multi-stream monitoring walls.
 
 **Important:** Stream URLs are time-limited and will expire. Re-fetch periodically if you need to maintain long-running playback. The `hls` format provides the most reliable playback across browsers and devices.
 

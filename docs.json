@@ -62,7 +62,7 @@
             ]
           },
           {
-            "group": "Live Captions",
+            "group": "Live Captions (legacy)",
             "pages": [
               "captions/overview",
               "captions/websocket",

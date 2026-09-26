@@ -45,31 +45,9 @@ def on_viewers(event):
 client.run()
 ```
 
-## Live Captions
+## Live Captions (legacy)
 
-```python
-from tiktok_live_api import TikTokCaptions
-
-captions = TikTokCaptions(
-    "streamer_username",
-    translate="en",
-    diarization=True,
-)
-
-@captions.on("caption")
-def on_caption(event):
-    speaker = event.get("speaker", "")
-    text = event["text"]
-    is_final = event.get("isFinal", False)
-    status = "FINAL" if is_final else "partial"
-    print(f"[{status}] [{speaker}] {text}")
-
-@captions.on("translation")
-def on_translation(event):
-    print(f"  -> {event['text']}")
-
-captions.run()
-```
+The Live Captions service is no longer offered to new customers. Existing caption customers can keep using the `TikTokCaptions` client in this package; see the [Captions SDK reference](/captions/sdk). For free captions on any stream, listen for the native [`caption` event](/websocket/events#caption) with `@client.on("caption")`.
 
 ## Events
 

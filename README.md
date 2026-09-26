@@ -11,7 +11,7 @@ Official documentation for the [TikTool](https://tik.tools) TikTok Live API - th
 | **Getting Started** | Quick start guide, authentication (API keys + JWT), and pricing |
 | **WebSocket API** | Real-time connection to live streams - 30+ event types with sub-50ms latency |
 | **REST API** | 22 endpoints for URL signing, live checks, room data, rankings, gifts, and more |
-| **Live Captions** | AI-powered real-time transcription and translation for any TikTok Live stream |
+| **Live Captions (legacy)** | Reference for existing caption customers; the service is no longer offered to new customers |
 | **SDKs** | Official [Node.js](https://www.npmjs.com/package/@tiktool/live) and [Python](https://pypi.org/project/tiktok-live-api/) SDKs |
 | **Integrations** | Unreal Engine 5 plugin for viewer-controlled games |
 

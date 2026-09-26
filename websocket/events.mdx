@@ -151,7 +151,7 @@ A viewer joins the live stream.
 
 ### caption
 
-**v3 (2026-06-07).** TikTok native auto-captions on the LIVE WebSocket. Each frame carries one caption window with text + start/end timestamps + `isFinal` flag. This is what TikTok's own viewer UI renders for accessibility and the Discover feed; it is independent of the operator-managed TikTok Live Captions product.
+**v3 (2026-06-07).** TikTok native auto-captions on the LIVE WebSocket. Each frame carries one caption window with text + start/end timestamps + `isFinal` flag. This is what TikTok's own viewer UI renders for accessibility and the Discover feed. Native captions are free and arrive on the standard LIVE WebSocket whenever TikTok provides them for the stream.
 
 ```json
 {
