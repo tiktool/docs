@@ -1,14 +1,14 @@
 ---
 noindex: true
 title: "Bulk Live Check"
-description: "Check live status for multiple TikTok users in a single request. Returns the same data as check_alive but for up to 100 users simultaneously."
+description: "Check live status for multiple TikTok users in a single request. Returns the same data as check_alive but for up to 200 users simultaneously."
 ---
 
 ## `POST` `/webcast/bulk_live_check`
 
-Check live status for multiple TikTok users in a single request. Returns the same data as `check_alive` but for up to 100 users simultaneously.
+Check live status for multiple TikTok users in a single request. Returns the same data as `check_alive` but for up to 200 users simultaneously.
 
-**Batch limits:** Free: 1 user, Pro: up to 50 users, Ultra: up to 100 users per request. Pass usernames as a JSON array in the request body.
+**Batch limits:** Sandbox: up to 5 users, Basic: up to 10 users, Pro: up to 50 users, Ultra: up to 100 users, Agency: up to 200 users per request. Pass usernames as a JSON array in the request body.
 
 **Response data:** Returns an array with each user's `unique_id`, `room_id`, `alive` status, `title`, and `userCount`. Users who are offline return `alive: false` with an empty `room_id`.
 

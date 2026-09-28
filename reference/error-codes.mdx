@@ -11,7 +11,7 @@ description: "HTTP status codes and API error responses returned by the TikTool 
 | `200` | OK | Request succeeded |
 | `400` | Bad Request | Missing or invalid parameters |
 | `401` | Unauthorized | Missing or invalid API key |
-| `403` | Forbidden | API key doesn't have permission for this action |
+| `403` | Forbidden | API key doesn't have permission for this action, or the Sandbox 7-day evaluation has ended |
 | `404` | Not Found | Endpoint doesn't exist or user not found |
 | `429` | Too Many Requests | Rate limit exceeded - wait and retry |
 | `500` | Internal Server Error | Server-side error - retry with backoff |
@@ -35,7 +35,7 @@ All errors return a JSON body with `status_code` and `message`:
 ```json
 {
   "status_code": 401,
-  "message": "Invalid API key. Get a free key at https://tik.tools"
+  "message": "Invalid API key. Get an API key at https://tik.tools"
 }
 ```
 
