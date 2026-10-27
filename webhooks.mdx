@@ -331,7 +331,7 @@ Deliveries that exceed the quota are dropped (not queued) and surfaced as `quota
 - **Verify the signature.** No exceptions.
 - **Don't trust the timestamp from the payload alone** — use the `X-Tiktool-Timestamp` header inside HMAC verification to prevent replay attacks beyond the 5-minute window.
 - **Avoid 3xx redirects.** We do not follow redirects. Configure your endpoint as the final URL.
-- **Logs.** We retain raw request bodies for 30 days in our database — request a CSV export from support if you need an audit trail.
+- **Logs.** We retain raw request bodies for 30 days - request a CSV export from support if you need an audit trail.
 
 ## Sample receiver for testing
 

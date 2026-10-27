@@ -8,7 +8,7 @@ description: "Resolve a TikTok username to their current live room ID. The serve
 
 Resolve a TikTok username to their current live room ID. The server resolves the `unique_id` to a `room_id` on your behalf - no client-side HTML scraping needed.
 
-**How it works:** The server checks its cache first (30-minute TTL). Resolution reliability varies by tier.
+**How it works:** The server checks its cache first (30-minute TTL), then resolves the username. Higher tiers get more reliable resolution.
 
 **Response data:** Returns `unique_id`, `room_id`, `alive` (whether the user is currently live), and `cached` (whether the result came from server cache). Use the returned `room_id` with other endpoints like `sign_websocket`, `rankings`, `gift_info`, etc.
 

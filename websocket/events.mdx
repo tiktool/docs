@@ -530,7 +530,7 @@ A viewer joins the live stream.
 
 ## v3 Tier 4 events
 
-The events below were modeled from live traffic. Each carries `protoVersion: 3`.
+Each event below carries `protoVersion: 3`.
 
 ### giftDynamicRestriction
 
@@ -1417,7 +1417,7 @@ Most events include a `user` object with this structure:
 
 ## Schema Versions
 
-Many event payloads carry an optional `protoVersion` field. It is the schema revision the parser decoded the event against, allowing v1 and v2 clients to coexist with v3 producers.
+Many event payloads carry an optional `protoVersion` field. It is the schema revision the event was decoded against, allowing v1 and v2 clients to coexist with v3 producers.
 
 | Version | First seen | What it means |
 |---|---|---|
@@ -1427,4 +1427,4 @@ Many event payloads carry an optional `protoVersion` field. It is the schema rev
 
 `protoVersion` is **only** emitted on events that actually carry v3-additive fields - if a chat message has no language tag and no UUID, `protoVersion` is `2`. Clients written against the v1 or v2 schema can keep ignoring the field; clients that want the new data can read `if (evt.protoVersion === 3) { ... }` without any feature-detection.
 
-The full v3 discovery spec was built from live traffic. Every event documented above ships as of the v3 rollout. Long-tail rare methods observed only a handful of times across both runs are tracked internally and will land in point releases as sample diversity allows safe field modelling.
+Every event documented above ships as of the v3 rollout. Rarer event types will land in point releases.
