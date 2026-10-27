@@ -1,7 +1,7 @@
 ---
 noindex: true
 title: "REST API Overview"
-description: "13+ REST endpoints for signing TikTok URLs, checking live status, fetching room data, rankings, and more."
+description: "13+ REST endpoints for checking live status, fetching room data, rankings, and more."
 ---
 
 ## Base URL
@@ -58,9 +58,9 @@ A `status_code` of `0` indicates success. Non-zero codes indicate an error with 
 
 | Method | Endpoint | Description | Min Tier |
 |--------|----------|-------------|----------|
-| `POST` | [`/webcast/sign_url`](/rest-api/sign-url) | Sign any TikTok URL (X-Bogus) | Sandbox |
-| `POST` | [`/webcast/sign_websocket`](/rest-api/sign-websocket) | Sign a WebSocket URL | Sandbox |
-| `POST` | [`/webcast/ws_credentials`](/rest-api/ws-credentials) | Pre-signed WS credentials | Sandbox |
+| `POST` | [`/webcast/sign_url`](/rest-api/sign-url) | Sign a TikTok LIVE request URL | Sandbox |
+| `POST` | [`/webcast/sign_websocket`](/rest-api/sign-websocket) | Legacy connection URL helper | Sandbox |
+| `POST` | [`/webcast/ws_credentials`](/rest-api/ws-credentials) | Direct WebSocket connection credentials | Sandbox |
 
 ### Identity & Info
 

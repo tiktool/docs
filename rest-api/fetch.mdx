@@ -1,14 +1,14 @@
 ---
 noindex: true
 title: "Fetch Events"
-description: "Fetch live stream events via HTTP long-polling. Returns the same real-time data as WebSocket (chat, gifts, likes, battles) but over HTTP. Uses TikTok's binary protobuf protocol and returns decoded eve"
+description: "Fetch live stream events via HTTP long-polling. Returns the same real-time data as WebSocket (chat, gifts, likes, battles) but over HTTP."
 ---
 
 ## `POST` `/webcast/fetch`
 
-Fetch live stream events via HTTP long-polling. Returns the same real-time data as WebSocket (chat, gifts, likes, battles) but over HTTP. Uses TikTok's binary protobuf protocol and returns decoded events.
+Fetch live stream events via HTTP long-polling. Returns the same real-time data as WebSocket (chat, gifts, likes, battles) but over HTTP.
 
-**How it works:** The API signs and fetches TikTok's internal polling endpoint, decodes the protobuf response, and returns structured event data. Pass a `cursor` from the previous response for continuous polling.
+**How it works:** Pass a `cursor` from the previous response for continuous polling. For real-time delivery, prefer the [WebSocket API](/websocket/connection).
 
 **Identification:** Provide either `unique_id` (username) or `room_id`. If using `unique_id`, the server resolves the room ID automatically.
 

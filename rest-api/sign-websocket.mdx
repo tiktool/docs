@@ -1,18 +1,20 @@
 ---
 noindex: true
 title: "Sign WebSocket"
-description: "Sign a TikTok WebSocket URL with X-Bogus parameters for direct connection to TikTok's webcast-ws servers. This is the WebSocket-specific equivalent of sign_url."
+description: "Legacy helper that returns a signed live connection URL for a room ID. New integrations should use ws_credentials or the managed WebSocket."
 ---
 
 ## `POST` `/webcast/sign_websocket`
 
-Sign a TikTok WebSocket URL with X-Bogus parameters for direct connection to TikTok's `webcast-ws` servers. This is the WebSocket-specific equivalent of `sign_url`.
+Legacy helper: returns a signed connection URL for a `room_id`, kept for clients that predate [`ws_credentials`](/rest-api/ws-credentials). New integrations should use `ws_credentials`, the managed [WebSocket API](/websocket/connection) or an SDK, which handle all of this for you.
 
-**How it works:** Provide a `room_id` and the API generates a fully signed WebSocket URL targeting the correct regional TikTok WebSocket server (`webcast-ws.tiktok.com`, `webcast-ws.us.tiktok.com`, etc.).
+**Authentication:** pass your API key (`apiKey` query parameter or `x-api-key` header).
 
-**Response:** Returns `signed_url` (the complete `wss://` URL), `cookies`, and `user_agent`. Connect using these credentials with the provided cookies in the WebSocket handshake headers.
+**Response data:** `signed_url`, `user_agent` and `cookies` (an opaque value to send as-is, may be empty). Values are short-lived; request fresh ones for each connection.
 
-**Use case:** Building custom WebSocket clients in languages without our SDK, or when you need fine-grained control over the WebSocket lifecycle. The SDK handles this internally - most users won't need this endpoint directly.
+**Need a room ID?** Resolve a username with [`/webcast/room_id`](/rest-api/room-id).
+
+**Errors:** a missing or invalid `room_id` returns a non-zero `status_code` with a `message`. Calls count toward your plan's request limits (see [Rate Limits](/reference/rate-limits)).
 
 ### Parameters
 
@@ -24,7 +26,7 @@ Sign a TikTok WebSocket URL with X-Bogus parameters for direct connection to Tik
 ### Response
 
 ```json
-{ "status_code": 0, "data": { "signed_url": "wss://...", "x_bogus": "...", "x_gnarly": "...", "user_agent": "...", "cookies": "..." } }
+{ "status_code": 0, "data": { "signed_url": "wss://...", "user_agent": "...", "cookies": "..." } }
 ```
 
 ### Examples
@@ -37,7 +39,7 @@ const res = await fetch('https://api.tik.tools/webcast/sign_websocket?apiKey=YOU
   body: JSON.stringify({ room_id: '7123456789' })
 });
 const { data } = await res.json();
-// Connect with: new WebSocket(data.signed_url)
+console.log(data.signed_url);
 ```
 
 ```python Python
@@ -46,7 +48,7 @@ res = requests.post('https://api.tik.tools/webcast/sign_websocket',
     params={'apiKey': 'YOUR_KEY'},
     json={'room_id': '7123456789'})
 data = res.json()['data']
-# Connect with websockets.connect(data['signed_url'])
+print(data['signed_url'])
 ```
 
 ```bash cURL

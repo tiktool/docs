@@ -1,18 +1,20 @@
 ---
 noindex: true
 title: "Sign URL"
-description: "Sign any TikTok webcast URL with the required X-Bogus and X-Gnarly anti-bot parameters. This is the foundation of the API - TikTok rejects unsigned requests, so this endpoint adds the cryptographic si"
+description: "Sign a TikTok LIVE request URL you built yourself. The API returns the signed URL plus the User-Agent to send with it."
 ---
 
 ## `POST` `/webcast/sign_url`
 
-Sign any TikTok webcast URL with the required `X-Bogus` and `X-Gnarly` anti-bot parameters. This is the foundation of the API - TikTok rejects unsigned requests, so this endpoint adds the cryptographic signatures needed for valid requests.
+Sign a TikTok LIVE request URL you built yourself. The URL must point at an approved TikTok host; the API returns it ready to call.
 
-**How it works:** Send any raw TikTok webcast URL in the request body. The API returns the signed URL with all required parameters appended, plus the `User-Agent` and cookies you must use when fetching.
+**Authentication:** pass your API key (`apiKey` query parameter or `x-api-key` header). The endpoint is also callable without a key at a low per-IP rate; a key lifts that cap.
 
-**Use cases:** Building custom TikTok integrations, signing WebSocket URLs for direct connections, or signing any TikTok API endpoint that requires X-Bogus validation.
+**Response data:** `signed_url` (your URL, ready to call), `user_agent` (send exactly this User-Agent with the request) and `cookies` (an opaque value to send as-is with the request, may be empty). Treat every returned value as opaque and short-lived; request a new one rather than reusing old values.
 
-**Response data:** Returns `signed_url` (the URL with signatures), `x_bogus`, `x_gnarly`, `user_agent`, and `cookies` fields. Always use the returned User-Agent when making the final request to TikTok.
+**Prefer parsed data?** Most integrations do not need to sign anything. [`/webcast/room_info`](/rest-api/room-info), [`/webcast/check_alive`](/rest-api/check-alive) and the [WebSocket API](/websocket/connection) return parsed results directly.
+
+**Errors:** a URL outside the approved hosts is rejected with a non-zero `status_code` and a `message`. Calls count toward your plan's request limits (see [Rate Limits](/reference/rate-limits)).
 
 ### Parameters
 
@@ -23,7 +25,7 @@ Sign any TikTok webcast URL with the required `X-Bogus` and `X-Gnarly` anti-bot 
 ### Response
 
 ```json
-{ "status_code": 0, "data": { "signed_url": "...", "x_bogus": "...", "x_gnarly": "...", "user_agent": "...", "cookies": "..." } }
+{ "status_code": 0, "data": { "signed_url": "...", "user_agent": "...", "cookies": "..." } }
 ```
 
 ### Examples
@@ -33,7 +35,7 @@ Sign any TikTok webcast URL with the required `X-Bogus` and `X-Gnarly` anti-bot 
 const res = await fetch('https://api.tik.tools/webcast/sign_url?apiKey=YOUR_KEY', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ url: 'https://webcast.tiktok.com/...' })
+  body: JSON.stringify({ url: 'YOUR_TIKTOK_LIVE_URL' })
 });
 const data = await res.json();
 console.log(data.data.signed_url);
@@ -43,19 +45,19 @@ console.log(data.data.signed_url);
 import requests
 res = requests.post('https://api.tik.tools/webcast/sign_url',
     params={'apiKey': 'YOUR_KEY'},
-    json={'url': 'https://webcast.tiktok.com/...'})
+    json={'url': 'YOUR_TIKTOK_LIVE_URL'})
 print(res.json()['data']['signed_url'])
 ```
 
 ```bash cURL
 curl -X POST "https://api.tik.tools/webcast/sign_url?apiKey=YOUR_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"url": "https://webcast.tiktok.com/..."}'
+  -d '{"url": "YOUR_TIKTOK_LIVE_URL"}'
 ```
 
 ```java Java
 HttpClient client = HttpClient.newHttpClient();
-String json = "{\"url\": \"https://webcast.tiktok.com/...\"}";
+String json = "{\"url\": \"YOUR_TIKTOK_LIVE_URL\"}";
 HttpRequest req = HttpRequest.newBuilder()
     .uri(URI.create("https://api.tik.tools/webcast/sign_url?apiKey=YOUR_KEY"))
     .header("Content-Type", "application/json")
@@ -66,7 +68,7 @@ System.out.println(res.body());
 ```
 
 ````go Go
-payload := bytes.NewBufferString(`{"url":"https://webcast.tiktok.com/..."}`)
+payload := bytes.NewBufferString(`{"url":"YOUR_TIKTOK_LIVE_URL"}`)
 resp, err := http.Post(
     "https://api.tik.tools/webcast/sign_url?apiKey=YOUR_KEY",
     "application/json", payload)
@@ -79,7 +81,7 @@ fmt.Println(string(body))
 ```csharp C#
 using var client = new HttpClient();
 var json = new StringContent(
-    @"{""url"":""https://webcast.tiktok.com/...""}",
+    @"{""url"":""YOUR_TIKTOK_LIVE_URL""}",
     Encoding.UTF8, "application/json");
 var res = await client.PostAsync(
     "https://api.tik.tools/webcast/sign_url?apiKey=YOUR_KEY", json);
